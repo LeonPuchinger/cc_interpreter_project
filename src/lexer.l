@@ -1,5 +1,7 @@
 %{
-    /* options */
+
+#include <stdio.h>
+
 %}
 
 /* keywords */
@@ -59,3 +61,13 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 {IDENT} { return ident; }
 
 %%
+
+int yywrap() {
+    // only read one file
+    return 1;
+}
+
+int main (int argc, char **argv) {
+    yyin = fopen(argv[1], "r");
+    yylex();
+}
