@@ -30,25 +30,25 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 
 %%
 
-{IF} { return if_kw; }
-{ELSE} { return else_kw; }
-{FOR} { return for_kw; }
-{WHILE} { return while_kw; }
-{RET} { return ret_kw; }
-{ASSIGN} { return assign; }
-{COMP_E} { return comp_e; }
-{COMP_NE} { return comp_ne; }
-{COMP_GT} { return comp_gt; }
-{COMP_GE} { return comp_ge; }
-{COMP_ST} { return comp_st; }
-{COMP_SE} { return comp_se; }
-{OP_PAREN} { return op_paren; }
-{CL_PAREN} { return cl_paren; }
-{OP_BRACE} { return op_brace; }
-{CL_BRACE} { return cl_brace; }
-{LIT_INT} { yylval.num = atoi(yytext); return int_lit; } 
-{LIT_STR} { return str_lit; }
-{IDENT} { return ident; }
+{IF} { return tk_if; }
+{ELSE} { return tk_else; }
+{FOR} { return tk_for; }
+{WHILE} { return tk_while; }
+{RET} { return tk_ret; }
+{ASSIGN} { return tk_assing; }
+{COMP_E} { return tk_comp_e; }
+{COMP_NE} { return tk_comp_ne; }
+{COMP_GT} { return tk_comp_gt; }
+{COMP_GE} { return tk_comp_ge; }
+{COMP_ST} { return tk_comp_st; }
+{COMP_SE} { return tk_comp_se; }
+{OP_PAREN} { return tk_op_paren; }
+{CL_PAREN} { return tk_cl_paren; }
+{OP_BRACE} { return tk_op_brace; }
+{CL_BRACE} { return tk_cl_brace; }
+{LIT_INT} { yylval.num = atoi(yytext); return tk_lit_int; }
+{LIT_STR} { yylval.str = strdup(yytext); return tk_lit_str; }
+{IDENT} { return tk_ident; }
 
 %%
 
