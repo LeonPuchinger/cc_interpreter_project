@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "gen/parser.tab.h"
+#include "../gen/parser.tab.h"
 %}
 
 %option noinput nounput noyywrap yylineno
