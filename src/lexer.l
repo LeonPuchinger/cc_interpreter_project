@@ -22,6 +22,9 @@ OP_PAREN "("
 CL_PAREN ")"
 OP_BRACE "{"
 CL_BRACE "}"
+/* ignored */
+SINGLE_LINE_COMM "//".*
+WHITESPACE [ \n\r\t]+
 /* literals */
 LIT_INT [0-9]+
 LIT_STR \"[^\"]*\"
@@ -49,6 +52,8 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 {LIT_INT} { yylval.num = atoi(yytext); return tk_lit_int; }
 {LIT_STR} { yylval.str = strdup(yytext); return tk_lit_str; }
 {IDENT} { return tk_ident; }
+{SINGLE_LINE_COMM} /* do nothing */
+{WHITESPACE} /* do nothing */
 . { printf("could not match token: %s", yytext) }
 
 %%
