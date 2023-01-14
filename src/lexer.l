@@ -3,6 +3,8 @@
 #include "gen/prolang.tab.h"
 %}
 
+%option noinput nounput noyywrap yylineno
+
 /* keywords */
 IF "if"
 ELSE "else"
