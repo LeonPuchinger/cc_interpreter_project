@@ -59,13 +59,3 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 . { printf("could not match token: %s", yytext) }
 
 %%
-
-int yywrap() {
-    // only read one file
-    return 1;
-}
-
-int main (int argc, char **argv) {
-    yyin = fopen(argv[1], "r");
-    yylex();
-}
