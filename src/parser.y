@@ -20,3 +20,7 @@ void yyerror(char *);
 START: tk_if { printf("test prod reached\n"); } /* placeholder so this will build */
 
 %%
+
+int main(void) {
+  return yyparse();
+}
