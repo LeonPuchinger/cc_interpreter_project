@@ -21,6 +21,13 @@ START: tk_if { printf("test prod reached\n"); } /* placeholder so this will buil
 
 %%
 
+
+void yyerror(char *message) {
+    extern char *yytext;
+    extern int yylineno;
+    fprintf(stderr, "ERROR: %s\nline: %d\nat: '%s'\n", message, yylineno, yytext);
+}
+
 int main(void) {
   return yyparse();
 }
