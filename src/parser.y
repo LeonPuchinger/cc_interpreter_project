@@ -1,5 +1,8 @@
 %{
+#include <stdio.h>
 
+int yylex(void);
+void yyerror(char *);
 %}
 
 %token tk_if tk_else tk_for tk_while tk_ret tk_assing tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st
