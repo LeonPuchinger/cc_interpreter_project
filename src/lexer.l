@@ -56,6 +56,6 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 {IDENT} { return tk_ident; }
 {SINGLE_LINE_COMM} /* do nothing */
 {WHITESPACE} /* do nothing */
-. { printf("could not match token: %s", yytext) }
+. { printf("could not match token: %s", yytext); }
 
 %%
