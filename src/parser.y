@@ -28,6 +28,4 @@ void yyerror(char *message) {
     fprintf(stderr, "ERROR: %s\nline: %d\nat: '%s'\n", message, yylineno, yytext);
 }
 
-int main(void) {
-  return yyparse();
-}
+
