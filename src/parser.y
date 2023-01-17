@@ -27,5 +27,3 @@ void yyerror(char *message) {
     extern int yylineno;
     fprintf(stderr, "ERROR: %s\nline: %d\nat: '%s'\n", message, yylineno, yytext);
 }
-
-
