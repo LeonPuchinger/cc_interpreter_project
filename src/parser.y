@@ -9,8 +9,8 @@ void yyerror(char *);
 %token tk_comp_se tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_lit_int tk_lit_str tk_ident
 
 %union {
-  int num;
-  char *str;
+    int num;
+    char *str;
 }
 
 %start START
