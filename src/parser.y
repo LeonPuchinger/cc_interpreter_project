@@ -22,7 +22,6 @@ START: tk_if { printf("test prod reached\n"); } /* placeholder so this will buil
 
 %%
 
-
 void yyerror(char *message) {
     extern char *yytext;
     extern int yylineno;
