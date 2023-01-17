@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "../src/types.h"
 
 int yylex(void);
 void yyerror(char *);
