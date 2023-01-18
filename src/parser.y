@@ -56,6 +56,7 @@ LOOP: tk_loop_kw tk_op_paren tk_cl_paren tk_op_brace STMTS tk_cl_brace {
 
 EXPR: tk_lit_int { $$ = int_node($1); }
     | tk_lit_str { $$ = str_node($1); }
+    | IDENT
 
 IDENT: tk_ident { $$ = str_node($1); }
 
