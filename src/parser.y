@@ -27,7 +27,7 @@ void yyerror(char *);
 %%
 
 START: STMTS { root = $1; }
-STMTS: STMTS STMT tk_semicol { $$ = empty_node(ND_STMT); $1->children[0] = $$; }
+STMTS: STMTS STMT tk_semicol { $$ = empty_node(ND_STMT); add_child($1, $$); }
     | %empty { $$ = NULL; }
 
 STMT: ASSIGN
