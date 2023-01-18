@@ -2,7 +2,7 @@
 #define _TYPES_H
 
 typedef enum {
-    ND_ROOT, ND_INT, ND_STR
+    ND_STMT, ND_INT, ND_STR, ND_ASSIGN,
 } AST_Node_Type;
 
 typedef struct AST_Node {
@@ -11,7 +11,7 @@ typedef struct AST_Node {
         int int_value;
         char *str_value;
     };
-    struct AST_Node *children;
+    struct AST_Node **children;
 } AST_Node;
 
 AST_Node *empty_node(AST_Node_Type type);
