@@ -40,6 +40,7 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 {FOR} { return tk_for; }
 {WHILE} { return tk_while; }
 {RET} { return tk_ret; }
+"fun" { return tk_func_kw; }
 {ASSIGN} { return tk_assign; }
 {COMP_E} { return tk_comp_e; }
 {COMP_NE} { return tk_comp_ne; }
