@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include "../src/types.h"
 
+extern AST_Node *root;
+
 int yylex(void);
 void yyerror(char *);
-void interpret_ast(AST_Node *);
 %}
 
 %type <ast_node> START
@@ -23,7 +24,7 @@ void interpret_ast(AST_Node *);
 
 %%
 
-START: tk_if { interpret_ast(int_node(1)); }
+START: tk_if { root = str_node("if"); }
 
 
 %%
