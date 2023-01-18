@@ -2,7 +2,7 @@
 #define _TYPES_H
 
 typedef enum {
-    ND_STMT, ND_INT, ND_STR, ND_ASSIGN, ND_FUNC_DEF,
+    ND_STMT, ND_INT, ND_STR, ND_ASSIGN, ND_FUNC_DEF, ND_COND,
 } AST_Node_Type;
 
 typedef struct AST_Node {

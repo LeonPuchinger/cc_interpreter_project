@@ -5,12 +5,6 @@
 
 %option noinput nounput noyywrap yylineno
 
-/* keywords */
-IF "if"
-ELSE "else"
-FOR "for"
-WHILE "while"
-RET "return"
 /* comparison operators */
 ASSIGN "="
 COMP_E "=="
@@ -35,11 +29,10 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 
 %%
 
-{IF} { return tk_if; }
-{ELSE} { return tk_else; }
-{FOR} { return tk_for; }
-{WHILE} { return tk_while; }
-{RET} { return tk_ret; }
+"if" { return tk_if_kw; }
+"else" { return tk_else_kw; }
+"loop" { return tk_loop_kw; }
+"return" { return tk_ret_kw; }
 "fun" { return tk_func_kw; }
 {ASSIGN} { return tk_assign; }
 {COMP_E} { return tk_comp_e; }
