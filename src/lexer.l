@@ -46,6 +46,7 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 {OP_BRACE} { return tk_op_brace; }
 {CL_BRACE} { return tk_cl_brace; }
 ";" { return tk_semicol; }
+"," { return tk_comma; }
 {LIT_INT} { yylval.num = atoi(yytext); return tk_lit_int; }
 {LIT_STR} { yylval.str = strdup(yytext); return tk_lit_str; }
 "true" | "false" { yylval.str = strdup(yytext); return tk_lit_bool; }

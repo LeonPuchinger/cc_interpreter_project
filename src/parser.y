@@ -9,10 +9,10 @@ int yylex(void);
 void yyerror(char *);
 %}
 
-%type <ast_node> STMTS STMT ASSIGN FUNC_DEF CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP IDENT
+%type <ast_node> STMTS STMT ASSIGN FUNC_DEF PARAMS CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP IDENT
 
 %token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se
-%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol
+%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma
 %token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw
 %token <num> tk_lit_int
 %token <str> tk_lit_str tk_lit_bool tk_ident
@@ -28,6 +28,7 @@ void yyerror(char *);
 %%
 
 START: STMTS { root = $1; }
+
 STMTS: STMTS STMT tk_semicol { $$ = empty_node(ND_STMT); add_child($1, $$); }
     | %empty { $$ = NULL; }
 
@@ -35,23 +36,33 @@ STMT: ASSIGN FUNC_DEF CONTROL_FLOW
 
 ASSIGN: IDENT tk_assign EXPR { $$ = empty_node(ND_ASSIGN); $$->children[0] = $1; $$->children[1] = $3; }
 
-FUNC_DEF: tk_func_kw IDENT tk_op_paren tk_cl_paren tk_op_brace STMTS tk_cl_brace { $$ = empty_node(ND_FUNC_DEF); add_child($$, $2); /* TODO: params */ add_child($$, NULL); add_child($$, $6); }
+FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_op_brace STMTS tk_cl_brace {
+    $$ = empty_node(ND_FUNC_DEF);
+    add_child($$, $2);
+    add_child($$, $4);
+    add_child($$, $7);
+}
+
+PARAMS: PARAMS tk_comma IDENT { add_child($1, $3); }
+    | IDENT { $$ = empty_node(ND_PARAMS); add_child($$, $1); }
+    | %empty { $$ = NULL; }
 
 CONTROL_FLOW: COND | LOOP
 
-COND: tk_if_kw tk_op_paren tk_cl_paren tk_op_brace STMTS tk_cl_brace COND_ALT { 
+COND: tk_if_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace COND_ALT { 
     $$ = empty_node(ND_COND);
-    /* TODO: bool expr */ add_child($$, NULL);
-    add_child($$, $5);
-    add_child($$, $7);
+    add_child($$, $3);
+    add_child($$, $6);
+    add_child($$, $8);
 }
+
 COND_ALT: tk_else_kw tk_op_brace STMTS tk_cl_brace { $$ = $3; }
     | %empty { $$ = NULL; }
 
-LOOP: tk_loop_kw tk_op_paren tk_cl_paren tk_op_brace STMTS tk_cl_brace {
+LOOP: tk_loop_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace {
     $$ = empty_node(ND_LOOP);
-    /* TODO: bool expr */ add_child($$, NULL);
-    add_child($$, $5);
+    add_child($$, $3);
+    add_child($$, $6);
 }
 
 EXPR: tk_lit_int { $$ = int_node($1); }
