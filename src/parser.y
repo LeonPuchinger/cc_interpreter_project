@@ -9,13 +9,13 @@ int yylex(void);
 void yyerror(char *);
 %}
 
-%type <ast_node> STMTS STMT ASSIGN FUNC_DEF CONTROL_FLOW COND COND_ALT LOOP EXPR IDENT
+%type <ast_node> STMTS STMT ASSIGN FUNC_DEF CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP IDENT
 
-%token tk_assign tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se 
+%token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se
 %token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol
 %token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw
 %token <num> tk_lit_int
-%token <str> tk_lit_str tk_ident
+%token <str> tk_lit_str tk_lit_bool tk_ident
 
 %union {
     int num;
@@ -56,7 +56,41 @@ LOOP: tk_loop_kw tk_op_paren tk_cl_paren tk_op_brace STMTS tk_cl_brace {
 
 EXPR: tk_lit_int { $$ = int_node($1); }
     | tk_lit_str { $$ = str_node($1); }
+    | BOOL_EXPR
     | IDENT
+
+BOOL_EXPR: tk_lit_bool OP_COMP tk_lit_bool {
+        $$ = empty_node_st(ND_BOOL, 0);
+        add_child($$, str_node($1));
+        add_child($$, $2);
+        add_child($$, str_node($3));
+    }
+    | IDENT OP_COMP tk_lit_bool {
+        $$ = empty_node_st(ND_BOOL, 1);
+        add_child($$, $1);
+        add_child($$, $2);
+        add_child($$, str_node($3));
+    }
+    | tk_lit_bool OP_COMP IDENT {
+        $$ = empty_node_st(ND_BOOL, 2);
+        add_child($$, str_node($1));
+        add_child($$, $2);
+        add_child($$, $3);
+    }
+    | IDENT OP_COMP IDENT {
+        $$ = empty_node_st(ND_BOOL, 3);
+        add_child($$, $1);
+        add_child($$, $2);
+        add_child($$, $3);
+    }
+    | tk_lit_bool { $$ = empty_node(ND_BOOL); add_child($$, str_node($1)); }
+
+OP_COMP: tk_comp_e { $$ = str_node($1); }
+    | tk_comp_ne { $$ = str_node($1); }
+    | tk_comp_gt { $$ = str_node($1); }
+    | tk_comp_ge { $$ = str_node($1); }
+    | tk_comp_st { $$ = str_node($1); }
+    | tk_comp_se { $$ = str_node($1); }
 
 IDENT: tk_ident { $$ = str_node($1); }
 

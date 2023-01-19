@@ -48,6 +48,7 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 ";" { return tk_semicol; }
 {LIT_INT} { yylval.num = atoi(yytext); return tk_lit_int; }
 {LIT_STR} { yylval.str = strdup(yytext); return tk_lit_str; }
+"true" | "false" { yylval.str = strdup(yytext); return tk_lit_bool; }
 {IDENT} { return tk_ident; }
 {SINGLE_LINE_COMM} /* do nothing */
 {WHITESPACE} /* do nothing */

@@ -22,10 +22,20 @@ void add_child(AST_Node *node, AST_Node *child) {
 
 AST_Node *empty_node(AST_Node_Type type) {
     // Create a AST node with only a AST node type.
+    // The subtype is NULL per default, as it is
+    // only needed in special situations
     // The node does not yet have any value or children.
     AST_Node *new = calloc(1, sizeof(AST_Node));
     new->type = type;
+    new->subtype = -1;
     init_children(new);
+    return new;
+}
+
+AST_Node *empty_node_st(AST_Node_Type type, AST_Node_Subtype subtype) {
+    // Shortcut to initialize an empty node with both a type and subtype.
+    AST_Node *new = empty_node(type);
+    new->subtype = subtype;
     return new;
 }
 
