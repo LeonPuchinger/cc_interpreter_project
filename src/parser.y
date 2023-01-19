@@ -98,10 +98,6 @@ BOOL_EXPR: tk_lit_bool OP_COMP tk_lit_bool {
 
 OP_COMP: tk_comp_e { $$ = str_node($1); }
     | tk_comp_ne { $$ = str_node($1); }
-    | tk_comp_gt { $$ = str_node($1); }
-    | tk_comp_ge { $$ = str_node($1); }
-    | tk_comp_st { $$ = str_node($1); }
-    | tk_comp_se { $$ = str_node($1); }
 
 INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
         $$ = empty_node_st(ND_INT_EXPR, 0);
@@ -129,9 +125,7 @@ INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
     }
     | tk_lit_int { $$ = empty_node(ND_INT_EXPR); add_child($$, int_node($1)); }
 
-OP_NUM: tk_comp_e { $$ = str_node($1); }
-    | tk_comp_ne { $$ = str_node($1); }
-    | tk_comp_gt { $$ = str_node($1); }
+OP_NUM: tk_comp_gt { $$ = str_node($1); }
     | tk_comp_ge { $$ = str_node($1); }
     | tk_comp_st { $$ = str_node($1); }
     | tk_comp_se { $$ = str_node($1); }
