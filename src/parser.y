@@ -6,8 +6,10 @@
 extern AST_Node *root;
 
 int yylex(void);
-void yyerror(char *);
+void yyerror(const char *);
 %}
+
+%define parse.error detailed
 
 %type <ast_node> STMTS STMT ASSIGN FUNC_DEF PARAMS CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
@@ -168,7 +170,7 @@ IDENT: tk_ident { $$ = str_node($1); }
 
 %%
 
-void yyerror(char *message) {
+void yyerror(const char *message) {
     extern char *yytext;
     extern int yylineno;
     fprintf(stderr, "ERROR: %s\nline: %d\nat: '%s'\n", message, yylineno, yytext);
