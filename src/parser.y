@@ -32,7 +32,7 @@ START: STMTS { root = $1; }
 STMTS: STMTS STMT tk_semicol { $$ = empty_node(ND_STMT); add_child($1, $$); }
     | %empty { $$ = NULL; }
 
-STMT: ASSIGN FUNC_DEF CONTROL_FLOW
+STMT: ASSIGN | FUNC_DEF | CONTROL_FLOW
 
 ASSIGN: IDENT tk_assign EXPR { $$ = empty_node(ND_ASSIGN); $$->children[0] = $1; $$->children[1] = $3; }
 
