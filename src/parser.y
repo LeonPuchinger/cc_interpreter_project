@@ -11,7 +11,7 @@ void yyerror(char *);
 
 %type <ast_node> STMTS STMT ASSIGN FUNC_DEF PARAMS CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
-%token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se
+%token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se tk_add tk_sub tk_concat
 %token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma
 %token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw
 %token <num> tk_lit_int
@@ -67,6 +67,7 @@ LOOP: tk_loop_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace
 
 EXPR: BOOL_EXPR
     | INT_EXPR
+    | STR_EXPR
     | FUNC_CALL
     | IDENT
 
@@ -98,6 +99,10 @@ BOOL_EXPR: tk_lit_bool OP_COMP tk_lit_bool {
 
 OP_COMP: tk_comp_e { $$ = str_node($1); }
     | tk_comp_ne { $$ = str_node($1); }
+    | tk_comp_gt { $$ = str_node($1); }
+    | tk_comp_ge { $$ = str_node($1); }
+    | tk_comp_st { $$ = str_node($1); }
+    | tk_comp_se { $$ = str_node($1); }
 
 INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
         $$ = empty_node_st(ND_INT_EXPR, 0);
@@ -125,10 +130,30 @@ INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
     }
     | tk_lit_int { $$ = empty_node(ND_INT_EXPR); add_child($$, int_node($1)); }
 
-OP_NUM: tk_comp_gt { $$ = str_node($1); }
-    | tk_comp_ge { $$ = str_node($1); }
-    | tk_comp_st { $$ = str_node($1); }
-    | tk_comp_se { $$ = str_node($1); }
+OP_NUM: tk_add { $$ = str_node($1); }
+    | tk_sub { $$ = str_node($1); }
+
+STR_EXPR: tk_lit_str tk_concat tk_lit_str {
+        $$ = empty_node_st(ND_STR_EXPR, 0);
+        add_child($$, str_node($1));
+        add_child($$, str_node($3));
+    }
+    | IDENT tk_concat tk_lit_str {
+        $$ = empty_node_st(ND_STR_EXPR, 1);
+        add_child($$, $1);
+        add_child($$, str_node($3));
+    }
+    | tk_lit_str tk_concat IDENT {
+        $$ = empty_node_st(ND_STR_EXPR, 2);
+        add_child($$, str_node($1));
+        add_child($$, $3);
+    }
+    | IDENT tk_concat IDENT {
+        $$ = empty_node_st(ND_STR_EXPR, 3);
+        add_child($$, $1);
+        add_child($$, $3);
+    }
+    | tk_lit_str { $$ = empty_node(ND_INT_EXPR); add_child($$, str_node($1)); }
 
 FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
     $$ = empty_node(ND_FUNC_CALL);

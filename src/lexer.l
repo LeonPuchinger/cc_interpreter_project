@@ -41,6 +41,9 @@ IDENT [a-zA-Z][_a-zA-Z0-9]*
 {COMP_GE} { return tk_comp_ge; }
 {COMP_ST} { return tk_comp_st; }
 {COMP_SE} { return tk_comp_se; }
+"++" { return tk_concat; }
+"+" { return tk_add; }
+"-" { return tk_sub; }
 {OP_PAREN} { return tk_op_paren; }
 {CL_PAREN} { return tk_cl_paren; }
 {OP_BRACE} { return tk_op_brace; }
