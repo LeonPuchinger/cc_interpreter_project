@@ -11,6 +11,10 @@ void init_children(AST_Node *node) {
 }
 
 void add_child(AST_Node *node, AST_Node *child) {
+    // Do not add child node, if the child is NULL
+    if (child == NULL) {
+        return;
+    }
     // Add a child to `node`. If there is not enough space, reallocate more space.
     if (node->children_size >= node->children_buffer_size) {
         node->children_buffer_size += AST_CHILDREN_BUFFER_SIZE;
