@@ -74,7 +74,7 @@ STMTS: STMTS STMT tk_semicol {
     }
     | %empty { $$ = NULL; }
 
-STMT: ASSIGN | CONTROL_FLOW
+STMT: ASSIGN | CONTROL_FLOW | EXPR
 
 ASSIGN: IDENT tk_assign EXPR { $$ = empty_node(ND_ASSIGN); $$->children[0] = $1; $$->children[1] = $3; }
 
