@@ -18,4 +18,5 @@ int main() {
     yyparse();
     // debug AST
     //debug_traverse_tree(root, 0);
+    interpret_ast(root);
 }
