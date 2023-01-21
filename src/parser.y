@@ -76,7 +76,11 @@ STMTS: STMTS STMT tk_semicol {
 
 STMT: ASSIGN | CONTROL_FLOW | EXPR
 
-ASSIGN: IDENT tk_assign EXPR { $$ = empty_node(ND_ASSIGN); $$->children[0] = $1; $$->children[1] = $3; }
+ASSIGN: IDENT tk_assign EXPR {
+    $$ = empty_node(ND_ASSIGN);
+    add_child($$, $1);
+    add_child($$, $3);
+}
 
 TYPE_ANNOT: tk_str_tp { $$ = empty_node_st(ND_TYPE, 0); }
     | tk_int_tp { $$ = empty_node_st(ND_TYPE, 1); }
