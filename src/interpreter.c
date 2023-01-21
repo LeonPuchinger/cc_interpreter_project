@@ -6,7 +6,7 @@
 AST_Node *root;
 
 void interpret_ast(AST_Node *root) {
-    // TODO
+    Symbol_Table *table = create_symbol_table();
 }
 
 int main() {

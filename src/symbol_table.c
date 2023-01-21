@@ -3,6 +3,12 @@
 #include <string.h>
 #include "types.h"
 
+Symbol_Table *create_symbol_table() {
+    Symbol_Table *table = (Symbol_Table *)malloc(sizeof(Symbol_Table));
+    table->current_scope = create_scope(NULL);
+    return table;
+}
+
 Scope *create_scope(Scope *parent) {
     Scope *scope = (Scope *)malloc(sizeof(Scope));
     scope->num_symbols = 0;
@@ -11,12 +17,12 @@ Scope *create_scope(Scope *parent) {
     return scope;
 }
 
-void push_scope(SymbolTable *table) {
+void push_scope(Symbol_Table *table) {
     Scope *new_scope = create_scope(table->current_scope);
     table->current_scope = new_scope;
 }
 
-void pop_scope(SymbolTable *table) {
+void pop_scope(Symbol_Table *table) {
     Scope *old_scope = table->current_scope;
     table->current_scope = table->current_scope->parent;
     free(old_scope);
@@ -36,7 +42,7 @@ Symbol *find_symbol(Scope *scope, char *name) {
     }
 }
 
-void set_symbol(SymbolTable *table, char *name, enum Symbol_Type type, void *value) {
+void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value) {
     Symbol *symbol = find_symbol(table->current_scope, name);
     if (symbol == NULL) {
         symbol = (Symbol *)malloc(sizeof(Symbol));

@@ -48,14 +48,15 @@ typedef struct Scope {
     struct Scope *parent;
 } Scope;
 
-typedef struct SymbolTable {
+typedef struct Symbol_Table {
     Scope *current_scope;
-} SymbolTable;
+} Symbol_Table;
 
+Symbol_Table *create_symbol_table();
 Scope *create_scope(Scope *parent);
-void push_scope(SymbolTable *table);
-void pop_scope(SymbolTable *table);
+void push_scope(Symbol_Table *table);
+void pop_scope(Symbol_Table *table);
 Symbol *find_symbol(Scope *scope, char *name);
-void set_symbol(SymbolTable *table, char *name, enum Symbol_Type type, void *value);
+void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value);
 
 #endif
