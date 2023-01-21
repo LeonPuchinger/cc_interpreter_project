@@ -52,8 +52,14 @@ FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_op_brace STMTS tk_c
     add_child($$, $7);
 }
 
-PARAMS: PARAMS tk_comma IDENT { add_child($1, $3); }
-    | IDENT { $$ = empty_node(ND_PARAMS); add_child($$, $1); }
+PARAMS: PARAMS IDENT tk_comma {
+        if ($1 != NULL) {
+            $$ = $1;
+        } else {
+            $$ = empty_node(ND_PARAMS);
+        }
+        add_child($$, $2);
+    }
     | %empty { $$ = NULL; }
 
 CONTROL_FLOW: COND | LOOP
