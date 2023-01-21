@@ -15,11 +15,12 @@ void add_child(AST_Node *node, AST_Node *child) {
     if (child == NULL) {
         return;
     }
-    // Add a child to `node`. If there is not enough space, reallocate more space.
+    // If there is not enough space, reallocate more space
     if (node->children_size >= node->children_buffer_size) {
         node->children_buffer_size += AST_CHILDREN_BUFFER_SIZE;
         node->children = realloc(node->children, node->children_buffer_size);
     }
+    // Add child to `node`
     node->children[node->children_size] = child;
     node->children_size += 1;
 }
@@ -29,7 +30,18 @@ void prepend_child(AST_Node *node, AST_Node *child) {
     if (child == NULL) {
         return;
     }
-    // TODO: implement
+    // If there is not enough space, reallocate more space
+    if (node->children_size >= node->children_buffer_size) {
+        node->children_buffer_size += AST_CHILDREN_BUFFER_SIZE;
+        node->children = realloc(node->children, node->children_buffer_size);
+    }
+    // Shift all children to the right by one
+    for (int i = node->children_size - 1; i >= 0; i -= 1) {
+        node->children[i + 1] = node->children[i];
+    }
+    // Prepend child to `node`
+    node->children[0] = child;
+    node->children_size += 1;
 }
 
 AST_Node *empty_node(AST_Node_Type type) {
