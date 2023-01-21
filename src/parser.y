@@ -31,7 +31,14 @@ void yyerror(const char *);
 
 START: STMTS { root = $1; }
 
-STMTS: STMTS STMT tk_semicol { $$ = empty_node(ND_STMT); add_child($1, $$); }
+STMTS: STMTS STMT tk_semicol {
+        if ($1 != NULL) {
+            $$ = $1;
+        } else {
+            $$ = empty_node(ND_STMT);
+        }
+        add_child($$, $2);
+    }
     | %empty { $$ = NULL; }
 
 STMT: ASSIGN | FUNC_DEF | CONTROL_FLOW
