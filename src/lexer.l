@@ -14,6 +14,9 @@
 "loop" { return tk_loop_kw; }
 "return" { return tk_ret_kw; }
 "fun" { return tk_func_kw; }
+"str" { return tk_str_tp; }
+"int" { return tk_int_tp; }
+"bool" { return tk_bool_tp; }
 "==" { return tk_comp_e; }
 "=" { return tk_assign; }
 "!=" { return tk_comp_ne; }
@@ -29,6 +32,7 @@
 "{" { return tk_op_brace; }
 "}" { return tk_cl_brace; }
 ";" { return tk_semicol; }
+":" { return tk_colon; }
 "," { return tk_comma; }
 [0-9]+ { yylval.num = atoi(yytext); return tk_lit_int; }
 \"[^\"]*\" { yylval.str = strdup(yytext); return tk_lit_str; }

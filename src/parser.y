@@ -11,11 +11,11 @@ void yyerror(const char *);
 
 %define parse.error detailed
 
-%type <ast_node> STMTS STMT ASSIGN FUNC_DEF PARAMS CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
+%type <ast_node> STMTS STMT ASSIGN FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
 %token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se tk_add tk_sub tk_concat
-%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma
-%token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw
+%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon
+%token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw tk_str_tp tk_int_tp tk_bool_tp
 %token <num> tk_lit_int
 %token <str> tk_lit_str tk_lit_bool tk_ident
 
@@ -52,19 +52,25 @@ FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_op_brace STMTS tk_c
     add_child($$, $7);
 }
 
-PARAMS: IDENT tk_comma PARAMS {
-        if ($3 != NULL) {
-            $$ = $3;
+PARAMS: IDENT tk_colon TYPE_ANNOT tk_comma PARAMS {
+        if ($5 != NULL) {
+            $$ = $5;
         } else {
             $$ = empty_node(ND_PARAMS);
         }
+        prepend_child($$, $3);
         prepend_child($$, $1);
     }
-    | IDENT {
+    | IDENT tk_colon TYPE_ANNOT {
         $$ = empty_node(ND_PARAMS);
         add_child($$, $1);
+        add_child($$, $3);
     }
     | %empty { $$ = NULL; }
+
+TYPE_ANNOT: tk_str_tp { $$ = empty_node_st(ND_TYPE, 0); }
+    | tk_int_tp { $$ = empty_node_st(ND_TYPE, 1); }
+    | tk_bool_tp { $$ = empty_node_st(ND_TYPE, 2); }
 
 CONTROL_FLOW: COND | LOOP
 

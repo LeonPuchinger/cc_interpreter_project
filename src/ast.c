@@ -24,6 +24,14 @@ void add_child(AST_Node *node, AST_Node *child) {
     node->children_size += 1;
 }
 
+void prepend_child(AST_Node *node, AST_Node *child) {
+    // Do not add child node, if the child is NULL
+    if (child == NULL) {
+        return;
+    }
+    // TODO: implement
+}
+
 AST_Node *empty_node(AST_Node_Type type) {
     // Create a AST node with only a AST node type.
     // The subtype is NULL per default, as it is
