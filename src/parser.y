@@ -185,8 +185,18 @@ FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
     add_child($$, $3);
 }
 
-EXPRS: EXPRS tk_comma EXPR { add_child($1, $3); }
-    | EXPR { $$ = empty_node(ND_EXPRS); }
+EXPRS: EXPRS tk_comma EXPR {
+        if ($3 != NULL) {
+            $$ = $3;
+        } else {
+            $$ = empty_node(ND_EXPRS);
+        }
+        prepend_child($$, $1);
+    }
+    | EXPR {
+        $$ = empty_node(ND_EXPRS);
+        add_child($$, $1);
+    }
     | %empty { $$ = NULL; }
 
 IDENT: tk_ident { $$ = str_node($1); }
