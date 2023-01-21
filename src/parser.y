@@ -64,7 +64,7 @@ PARAMS: IDENT tk_colon TYPE_ANNOT tk_comma PARAMS {
     }
     | %empty { $$ = NULL; }
 
-STMTS: STMTS STMT tk_semicol {
+STMTS: STMTS STMT {
         if ($1 != NULL) {
             $$ = $1;
         } else {
@@ -74,7 +74,9 @@ STMTS: STMTS STMT tk_semicol {
     }
     | %empty { $$ = NULL; }
 
-STMT: ASSIGN | CONTROL_FLOW | EXPR
+STMT: ASSIGN tk_semicol { $$ = $1; }
+    | CONTROL_FLOW
+    | EXPR tk_semicol { $$ = $1; }
 
 ASSIGN: IDENT tk_assign EXPR {
     $$ = empty_node(ND_ASSIGN);
