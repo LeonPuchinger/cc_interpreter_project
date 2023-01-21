@@ -11,7 +11,7 @@ void yyerror(const char *);
 
 %define parse.error detailed
 
-%type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
+%type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP LIT INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
 %token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se tk_add tk_sub tk_concat
 %token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon
@@ -110,21 +110,21 @@ EXPR: BOOL_EXPR
     | FUNC_CALL
     | IDENT
 
-BOOL_EXPR: tk_lit_bool OP_COMP tk_lit_bool {
+BOOL_EXPR: LIT OP_COMP LIT {
         $$ = empty_node_st(ND_BOOL_EXPR, 0);
-        add_child($$, str_node($1));
+        add_child($$, $1);
         add_child($$, $2);
-        add_child($$, str_node($3));
+        add_child($$, $3);
     }
-    | IDENT OP_COMP tk_lit_bool {
+    | IDENT OP_COMP LIT {
         $$ = empty_node_st(ND_BOOL_EXPR, 1);
         add_child($$, $1);
         add_child($$, $2);
-        add_child($$, str_node($3));
+        add_child($$, $3);
     }
-    | tk_lit_bool OP_COMP IDENT {
+    | LIT OP_COMP IDENT {
         $$ = empty_node_st(ND_BOOL_EXPR, 2);
-        add_child($$, str_node($1));
+        add_child($$, $1);
         add_child($$, $2);
         add_child($$, $3);
     }
@@ -142,6 +142,10 @@ OP_COMP: tk_comp_e { $$ = str_node("=="); }
     | tk_comp_ge { $$ = str_node(">="); }
     | tk_comp_st { $$ = str_node("<"); }
     | tk_comp_se { $$ = str_node("<="); }
+
+LIT: tk_lit_bool { $$ = str_node($1); }
+    | tk_lit_str { $$ = str_node($1); }
+    | tk_lit_int { $$ = int_node($1); }
 
 INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
         $$ = empty_node_st(ND_INT_EXPR, 0);
