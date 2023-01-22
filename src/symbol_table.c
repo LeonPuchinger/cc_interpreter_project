@@ -28,7 +28,8 @@ void pop_scope(Symbol_Table *table) {
     free(old_scope);
 }
 
-Symbol *find_symbol(Scope *scope, char *name) {
+Symbol *find_symbol(Symbol_Table *table, char *name) {
+    Scope *scope = table->current_scope;
     for (int i = 0; i < scope->num_symbols; i++) {
         if (strcmp(scope->symbols[i]->name, name) == 0) {
             return scope->symbols[i];
