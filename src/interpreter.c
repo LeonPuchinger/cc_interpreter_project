@@ -118,7 +118,7 @@ Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node
     Symbol *result = execute_expression(table, global_table, expr, function);
     // check whether the return type matches what is actually returned
     enum Symbol_Type ident_type = result->type;
-    enum Symbol_Type ret_type = function->type;
+    enum Symbol_Type ret_type = function->value.func_val.return_type;
     if (ident_type != ret_type) {
         printf("ERROR: return type does not match return type specified in function header.\n");
         printf("affected function: %s\n", function->name);
