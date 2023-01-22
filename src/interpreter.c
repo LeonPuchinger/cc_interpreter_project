@@ -142,6 +142,39 @@ void *execute_return(Symbol_Table *table, AST_Node *ret, Symbol *function) {
     }
 }
 
+Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
+    switch (expr->type) {
+    case ND_STR:
+        // expression is an ident
+        char *ident_name = expr->str_value;
+        if (find_symbol(global_table, ident_name)) {
+            // ident can't have the same name as an already existent function
+            printf("ERROR: function '%s' cannot be accesses as a variable. functions are not first class citizens.\n", ident_name);
+            printf("affected function: %s\n", function->name);
+            exit(1);
+        }
+        Symbol *ident = find_symbol(table, ident_name);
+        if (ident == NULL) {
+            // ident does not exits
+            printf("ERROR: trying to access '%s', which does not exits.\n", ident_name);
+            printf("affected function: %s\n", function->name);
+            exit(1);
+        }
+        // build a new symbol for the identifier
+        switch (ident->type) {
+        case SYM_BOOL:
+            return create_symbol_bool("", ident->value.bool_val);
+        case SYM_INT:
+            return create_symbol_int("", ident->value.int_val);
+        case SYM_STR:
+            return create_symbol_string("", ident->value.string_val);
+        }
+        printf("ERROR: cannot use function in an expression that is not a function call.\n");
+        printf("affected function: %s\n", function->name);
+        exit(1);
+    }
+}
+
 void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function) {
     switch (stmt->type) {
         // ND_ASSIGN, ND_COND, ND_LOOP, ND_RET, EXPR_...
@@ -159,7 +192,7 @@ void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stm
         return;
     default:
         // assume stmt is expr
-
+        execute_expression(table, global_table, stmt, function);
         return;
     }
 }
