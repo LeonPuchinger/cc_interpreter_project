@@ -205,6 +205,7 @@ STR_EXPR: tk_lit_str tk_concat tk_lit_str {
 
 FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
     $$ = empty_node(ND_FUNC_CALL);
+    add_child($$, $1);
     add_child($$, $3);
 }
 
