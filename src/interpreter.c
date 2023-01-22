@@ -156,12 +156,13 @@ Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
     }
     // calculate result of the expression
     char *operator = expr->children[1]->str_value;
-    int result = 0;
+    int cal_result = 0;
     if (strcmp(operator, "+") == 0) {
-        result = lhs_value + rhs_value;
+        cal_result = lhs_value + rhs_value;
+    } else {
+        cal_result = lhs_value - rhs_value;
     }
-    result = lhs_value - rhs_value;
-    return create_symbol_int("", result);
+    return create_symbol_int("", cal_result);
 }
 
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
