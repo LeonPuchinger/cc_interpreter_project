@@ -65,5 +65,9 @@ void push_scope(Symbol_Table *table);
 void pop_scope(Symbol_Table *table);
 Symbol *find_symbol(Scope *scope, char *name);
 void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node);
+void set_symbol_int(Symbol_Table *table, char *name, int value);
+void set_symbol_bool(Symbol_Table *table, char *name, int value);
+void set_symbol_string(Symbol_Table *table, char *name, char *value);
+
 
 #endif

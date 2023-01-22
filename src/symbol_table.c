@@ -73,3 +73,15 @@ void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *va
         break;
     }
 }
+
+void set_symbol_int(Symbol_Table *table, char *name, int value) {
+    set_symbol(table, name, SYM_INT, &value, NULL, NULL, 0, SYM_INT, NULL);
+}
+
+void set_symbol_bool(Symbol_Table *table, char *name, int value) {
+    set_symbol(table, name, SYM_BOOL, &value, NULL, NULL, 0, SYM_BOOL, NULL);
+}
+
+void set_symbol_string(Symbol_Table *table, char *name, char *value) {
+    set_symbol(table, name, SYM_STR, value, NULL, NULL, 0, SYM_STR, NULL);
+}
