@@ -49,15 +49,15 @@ void register_funcs(AST_Node *root, Symbol_Table *table) {
                 param_types[j / 2] = subtype_to_symbol_type(params->children[j + 1]->subtype);
             }
         }
-        AST_Node *stmts = NULL;
-        if (func->children[func->children_size - 2]->type == ND_STMTS) {
-            // function has statements
-            stmts = func->children[func->children_size - 2];
-        }
         enum Symbol_Type return_type;
-        if (func->children[func->children_size - 1]->type == ND_STR) {
+        if (func->children[func->children_size - 2]->type == ND_TYPE) {
             // function has return type
-            return_type = subtype_to_symbol_type(func->children[func->children_size - 1]->subtype);
+            return_type = subtype_to_symbol_type(func->children[func->children_size - 2]->subtype);
+        }
+        AST_Node *stmts = NULL;
+        if (func->children[func->children_size - 1]->type == ND_STMTS) {
+            // function has statements
+            stmts = func->children[func->children_size - 1];
         }
         set_symbol_func(table, func_name, param_names, param_types, param_count, return_type, stmts);
     }
