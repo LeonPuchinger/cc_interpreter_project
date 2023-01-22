@@ -184,7 +184,11 @@ Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol
     AST_Node *stmts = function->value.func_val.func_node;
     for (int i = 0; i < stmts->children_size; i += 1) {
         AST_Node *stmt = stmts->children[i];
-        execute_stmt(table, global_table, stmt);
+        Symbol *return_result = execute_stmt(table, global_table, stmt, function);
+        if (return_result != NULL) {
+            // function has hit return statement
+            return return_result;
+        }
     }
 }
 
@@ -193,7 +197,11 @@ void interpret_ast(AST_Node *root) {
 
     register_funcs(root, global_table);
     Symbol *begin = check_entry_point(global_table);
-    execute_function(create_symbol_table(), global_table, begin);
+    Symbol *rc = execute_function(create_symbol_table(), global_table, begin);
+    if (rc != NULL) {
+        // make the interpreter return whatever the begin function returns as the exit code
+        exit(rc->value.int_val);
+    }
 }
 
 
