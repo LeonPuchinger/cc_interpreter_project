@@ -14,6 +14,7 @@ void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *a
 Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
 Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
+Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
@@ -165,6 +166,38 @@ Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
     return create_symbol_int("", cal_result);
 }
 
+Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
+    if (expr->children_size == 1) {
+        // expression is just a str literal
+        return create_symbol_string("", expr->children[0]->str_value);
+    }
+    AST_Node *lhs_expr = expr->children[0];
+    char *lhs_value;
+    AST_Node *rhs_expr = expr->children[1];
+    char *rhs_value;
+    if (expr->subtype == 0 || expr->subtype == 2) {
+        // left side of expr is a literal => just read value
+        lhs_value = lhs_expr->str_value;
+    }
+    if (expr->subtype == 1 || expr->subtype == 3) {
+        // left side of expr is an ident => evaluate
+        Symbol *result = execute_expression(table, global_table, lhs_expr, function);
+        lhs_value = result->value.string_val;
+    }
+    if (expr->subtype == 0 || expr->subtype == 1) {
+        // right side of expr is a literal => just read value
+        rhs_value = rhs_expr->str_value;
+    }
+    if (expr->subtype == 2 || expr->subtype == 3) {
+        // right side of expr is an ident => evaluate
+        Symbol *result = execute_expression(table, global_table, rhs_expr, function);
+        rhs_value = result->value.string_val;
+    }
+    // always concatenate (no other operator)
+    char *concat_result = strcat(lhs_value, rhs_value);
+    return create_symbol_string("", concat_result);
+}
+
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
     switch (expr->type) {
     case ND_STR:
@@ -197,6 +230,8 @@ Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_
         exit(1);
     case ND_INT_EXPR:
         return execute_int_expr(table, global_table, expr, function);
+    case ND_STR_EXPR:
+        return execute_str_expr(table, global_table, expr, function);
     }
 }
 
