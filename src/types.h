@@ -33,17 +33,18 @@ void prepend_child(AST_Node *node, AST_Node *child);
 enum Symbol_Type { SYM_INT, SYM_BOOL, SYM_STR, SYM_FUNC };
 
 typedef struct Symbol {
-    char* name;
+    char *name;
     enum Symbol_Type type;
     union {
         int int_val;
         int bool_val;
-        char* string_val;
+        char *string_val;
         struct {
-            char** param_names;
-            enum Symbol_Type* param_types;
+            char **param_names;
+            enum Symbol_Type *param_types;
             int num_params;
             enum Symbol_Type return_type;
+            struct AST_Node *func_node;
         } func_val;
     } value;
 } Symbol;
@@ -63,6 +64,6 @@ Scope *create_scope(Scope *parent);
 void push_scope(Symbol_Table *table);
 void pop_scope(Symbol_Table *table);
 Symbol *find_symbol(Scope *scope, char *name);
-void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type);
+void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node);
 
 #endif

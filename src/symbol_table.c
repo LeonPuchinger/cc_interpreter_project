@@ -42,11 +42,11 @@ Symbol *find_symbol(Scope *scope, char *name) {
     }
 }
 
-void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type) {
+void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node) {
     Symbol *symbol = find_symbol(table->current_scope, name);
     if (symbol == NULL) {
-        symbol = malloc(sizeof(Symbol));
-        symbol->name = malloc(sizeof(char) * (strlen(name) + 1));
+        symbol = (Symbol *)malloc(sizeof(Symbol));
+        symbol->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
         strcpy(symbol->name, name);
         table->current_scope->num_symbols++;
         table->current_scope->symbols = (Symbol **)realloc(table->current_scope->symbols, sizeof(Symbol *) * table->current_scope->num_symbols);
@@ -61,7 +61,7 @@ void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *va
         symbol->value.bool_val = *(int *)value;
         break;
     case SYM_STR:
-        symbol->value.string_val = malloc(sizeof(char) * (strlen((char *)value) + 1));
+        symbol->value.string_val = (char *)malloc(sizeof(char) * (strlen((char *)value) + 1));
         strcpy(symbol->value.string_val, (char *)value);
         break;
     case SYM_FUNC:
@@ -69,6 +69,7 @@ void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *va
         symbol->value.func_val.param_types = param_types;
         symbol->value.func_val.num_params = num_params;
         symbol->value.func_val.return_type = return_type;
+        symbol->value.func_val.func_node = func_node;
         break;
     }
 }
