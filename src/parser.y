@@ -14,7 +14,7 @@ void yyerror(const char *);
 %type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP LIT INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
 %token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se tk_add tk_sub tk_concat
-%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon
+%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon tk_ret_tp_ind
 %token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw tk_str_tp tk_int_tp tk_bool_tp
 %token <num> tk_lit_int
 %token <str> tk_lit_str tk_lit_bool tk_ident
@@ -41,11 +41,12 @@ FUNC_DEFS: FUNC_DEFS FUNC_DEF {
     }
     | %empty { $$ = NULL; }
 
-FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_op_brace STMTS tk_cl_brace {
+FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_ret_tp_ind TYPE_ANNOT tk_cl_paren tk_op_brace STMTS tk_cl_brace {
     $$ = empty_node(ND_FUNC_DEF);
     add_child($$, $2);
     add_child($$, $4);
-    add_child($$, $7);
+    add_child($$, $6);
+    add_child($$, $9);
 }
 
 PARAMS: IDENT tk_colon TYPE_ANNOT tk_comma PARAMS {

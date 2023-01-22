@@ -17,6 +17,7 @@
 "str" { return tk_str_tp; }
 "int" { return tk_int_tp; }
 "bool" { return tk_bool_tp; }
+"->" { return tk_ret_tp_ind; }
 "==" { return tk_comp_e; }
 "=" { return tk_assign; }
 "!=" { return tk_comp_ne; }
