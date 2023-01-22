@@ -57,6 +57,47 @@ Symbol *find_symbol(Symbol_Table *table, char *name) {
     }
 }
 
+Symbol *create_symbol(char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node) {
+    Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
+    new_symbol->name = name;
+    new_symbol->type = type;
+    switch (type) {
+    case SYM_INT:
+        new_symbol->value.int_val = *((int *)value);
+        break;
+    case SYM_BOOL:
+        new_symbol->value.bool_val = *((int *)value);
+        break;
+    case SYM_STR:
+        new_symbol->value.string_val = (char *)value;
+        break;
+    case SYM_FUNC:
+        new_symbol->value.func_val.param_names = param_names;
+        new_symbol->value.func_val.param_types = param_types;
+        new_symbol->value.func_val.num_params = num_params;
+        new_symbol->value.func_val.return_type = return_type;
+        new_symbol->value.func_val.func_node = func_node;
+        break;
+    }
+    return new_symbol;
+}
+
+Symbol *create_symbol_int(char *name, int value) {
+    int *val = malloc(sizeof(int));
+    *val = value;
+    return create_symbol(name, SYM_INT, val, NULL, NULL, 0, 0, NULL);
+}
+
+Symbol *create_symbol_string(char *name, char *value) {
+    return create_symbol(name, SYM_STR, value, NULL, NULL, 0, 0, NULL);
+}
+
+Symbol *create_symbol_bool(char *name, int value) {
+    int *val = malloc(sizeof(int));
+    *val = value;
+    return create_symbol(name, SYM_BOOL, val, NULL, NULL, 0, 0, NULL);
+}
+
 void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node) {
     Symbol *symbol = find_symbol_scope(table->current_scope, name);
     if (symbol == NULL) {
