@@ -17,7 +17,7 @@ Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
 Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
-void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
+Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *source_function);
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
 
 enum Symbol_Type subtype_to_symbol_type(int subtype) {
@@ -320,6 +320,8 @@ Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_
         return execute_str_expr(table, global_table, expr, function);
     case ND_BOOL_EXPR:
         return execute_bool_expr(table, global_table, expr, function);
+    case ND_FUNC_CALL:
+        return call_function(table, global_table, expr, function);
     }
 }
 
@@ -344,8 +346,48 @@ Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
     }
 }
 
+Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *source_function) {
+    char *dest_func_name = func_call->children[0]->str_value;
+    // TODO: check if stdlib function
+    Symbol *dest_function = find_symbol(global_table, dest_func_name);
+    if (dest_function == NULL) {
+        printf("ERROR: called function does not exist: '%s'.\n", dest_func_name);
+        printf("affected function: %s\n", source_function->name);
+        exit(1);
+    }
+    // compare function param types with called types and populate symbol table with params
+    int expr_size = 0;
+    AST_Node *exprs = NULL;
+    if (func_call->children_size == 2) {
+        // function called with parameters
+        exprs = func_call->children[1];
+        expr_size = exprs->children_size;
+    }
+    if (dest_function->value.func_val.num_params != expr_size) {
+        printf("ERROR: function %s called with incorrect number of arguments\n", dest_function->name);
+        printf("affected function: %s\n", source_function->name);
+        exit(1);
+    }
+    // check whether the function call uses the right param types
+    // if so, populate the symbol table for the called function with the parameter
+    Symbol_Table *new_table = create_symbol_table();
+    for (int i = 0; i < dest_function->value.func_val.num_params; i += 1) {
+        // iterate over exprs in the func call and params defined in the function
+        enum Symbol_Type param_type = dest_function->value.func_val.param_types[i];
+        Symbol *expr_symbol = execute_expression(table, global_table, exprs->children[i], source_function);
+        if (param_type != expr_symbol->type) {
+            printf("ERROR: type mismatch when calling function %s\n.", dest_func_name);
+            printf("affected function: %s\n", source_function->name);
+            exit(1);
+        }
+        expr_symbol->name = dest_function->value.func_val.param_names[i];
+        set_existing_symbol(new_table, expr_symbol);
+    }
+    execute_function(new_table, global_table, dest_function);
+}
+
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function) {
-    // TODO: populate table with params
+    // assume `table` is already populated with function params
     AST_Node *stmts = function->value.func_val.func_node;
     for (int i = 0; i < stmts->children_size; i += 1) {
         AST_Node *stmt = stmts->children[i];
