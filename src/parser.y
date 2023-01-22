@@ -78,7 +78,7 @@ STMTS: STMTS STMT {
 
 STMT: ASSIGN tk_semicol { $$ = $1; }
     | CONTROL_FLOW
-    | RETURN
+    | RETURN tk_semicol { $$ = $1; }
     | EXPR tk_semicol { $$ = $1; }
 
 ASSIGN: IDENT tk_assign EXPR {
