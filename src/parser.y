@@ -41,11 +41,11 @@ FUNC_DEFS: FUNC_DEFS FUNC_DEF {
     }
     | %empty { $$ = NULL; }
 
-FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_ret_tp_ind TYPE_ANNOT tk_cl_paren tk_op_brace STMTS tk_cl_brace {
+FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_ret_tp_ind TYPE_ANNOT tk_op_brace STMTS tk_cl_brace {
     $$ = empty_node(ND_FUNC_DEF);
     add_child($$, $2);
     add_child($$, $4);
-    add_child($$, $6);
+    add_child($$, $7);
     add_child($$, $9);
 }
 
