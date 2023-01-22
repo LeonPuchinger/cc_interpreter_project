@@ -40,15 +40,13 @@ void register_funcs(AST_Node *root, Symbol_Table *table) {
         if (func->children_size >= 2 && func->children[1]->type == ND_PARAMS) {
             // function has params
             AST_Node *params = func->children[1];
-            param_count = params->children_size;
+            param_count = params->children_size / 2;
             param_names = calloc(param_count, sizeof(char *));
             param_types = calloc(param_count, sizeof(enum Symbol_Type));
             for (int j = 0; j < params->children_size; j += 2) {
                 // iterate over params (extract name & type)
-                AST_Node *param = params->children[j];
-                char *name = param->children[0]->str_value;
-                param_names[j] = name;
-                param_types[j] = subtype_to_symbol_type(param->children[0]->subtype);
+                param_names[j / 2] = params->children[j]->str_value;
+                param_types[j / 2] = subtype_to_symbol_type(params->children[j + 1]->subtype);
             }
         }
         AST_Node *stmts = NULL;
