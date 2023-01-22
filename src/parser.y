@@ -139,7 +139,7 @@ BOOL_EXPR: LIT OP_COMP LIT {
         add_child($$, $2);
         add_child($$, $3);
     }
-    | tk_lit_bool { $$ = empty_node(ND_BOOL_EXPR); add_child($$, str_node($1)); }
+    | tk_lit_bool { $$ = empty_node_st(ND_BOOL_EXPR, 4); add_child($$, str_node($1)); }
 
 OP_COMP: tk_comp_e { $$ = str_node("=="); }
     | tk_comp_ne { $$ = str_node("!="); }
@@ -176,7 +176,7 @@ INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
         add_child($$, $2);
         add_child($$, $3);
     }
-    | tk_lit_int { $$ = empty_node(ND_INT_EXPR); add_child($$, int_node($1)); }
+    | tk_lit_int { $$ = empty_node_st(ND_INT_EXPR, 4); add_child($$, int_node($1)); }
 
 OP_NUM: tk_add { $$ = str_node("+"); }
     | tk_sub { $$ = str_node("-"); }
@@ -201,7 +201,7 @@ STR_EXPR: tk_lit_str tk_concat tk_lit_str {
         add_child($$, $1);
         add_child($$, $3);
     }
-    | tk_lit_str { $$ = empty_node(ND_INT_EXPR); add_child($$, str_node($1)); }
+    | tk_lit_str { $$ = empty_node_st(ND_INT_EXPR, 4); add_child($$, str_node($1)); }
 
 FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
     $$ = empty_node(ND_FUNC_CALL);
