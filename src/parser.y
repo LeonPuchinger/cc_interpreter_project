@@ -100,7 +100,10 @@ COND: tk_if_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace C
     add_child($$, $8);
 }
 
-COND_ALT: tk_else_kw tk_op_brace STMTS tk_cl_brace { $$ = $3; }
+COND_ALT: tk_else_kw tk_op_brace STMTS tk_cl_brace {
+        $$ = empty_node(ND_COND_ALT);
+        add_child($$, $3);
+    }
     | %empty { $$ = NULL; }
 
 LOOP: tk_loop_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace {

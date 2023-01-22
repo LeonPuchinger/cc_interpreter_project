@@ -11,6 +11,7 @@ enum Symbol_Type subtype_to_symbol_type(int subtype);
 void register_funcs(AST_Node *root, Symbol_Table *table);
 Symbol *check_entry_point(Symbol_Table *table);
 void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign, Symbol *function);
+Symbol *execute_cond(Symbol_Table *table, Symbol_Table *global_table, AST_Node *cond, Symbol *function);
 Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
 Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
@@ -18,7 +19,7 @@ Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
 Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *source_function);
-Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
+Symbol *execute_stmts(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmts, Symbol *function);
 
 enum Symbol_Type subtype_to_symbol_type(int subtype) {
     // Helper function to translate an AST subtype into a Symbol_Type.
@@ -113,6 +114,44 @@ void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *a
     }
     result->name = variable_name;
     set_existing_symbol(table, result);
+}
+
+Symbol *execute_cond(Symbol_Table *table, Symbol_Table *global_table, AST_Node *cond, Symbol *function) {
+    Symbol *bool_expr = execute_expression(table, global_table, cond->children[0], function);
+    // check whether condition is true
+    if (bool_expr->value.bool_val != 0) {
+        if (cond->children_size >= 2 && cond->children[1]->type == ND_STMTS) {
+            // only execute contained statements if there are any
+            // move up one scope
+            push_scope(table);
+            Symbol *result = execute_stmts(table, global_table, cond->children[1], function);
+            pop_scope(table);
+            if (result != NULL) {
+                return result;
+            }
+        }
+    } else {
+        // extract statements from else branch
+        AST_Node *alt_stmts;
+        if (cond->children_size >= 2 && cond->children[1]->type == ND_COND_ALT) {
+            alt_stmts = cond->children[1];
+        }
+        if (cond->children_size >= 3 && cond->children[2]->type == ND_COND_ALT) {
+            alt_stmts = cond->children[2];
+        }
+        // only execute statements if there are any
+        if (alt_stmts->children_size >= 1) {
+            alt_stmts = alt_stmts->children[0];
+        }
+        // execute statements
+        // move up one scope
+        push_scope(table);
+        Symbol *result = execute_stmts(table, global_table, alt_stmts, function);
+        pop_scope(table);
+        if (result != NULL) {
+            return result;
+        }
+    }
 }
 
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function) {
@@ -216,10 +255,10 @@ Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_N
         // left side of expr is a literal => evaluate
         AST_Node *temp;
         // check whether the literal is int or bool
-        if (lhs_expr->str_value != NULL) {
-            temp = empty_node(ND_BOOL_EXPR);
-        } else {
+        if (lhs_expr->type == ND_INT) {
             temp = empty_node(ND_INT_EXPR);
+        } else {
+            temp = empty_node(ND_BOOL_EXPR);
         }
         add_child(temp, lhs_expr);
         lhs_symbol = execute_expression(table, global_table, temp, function);
@@ -232,10 +271,10 @@ Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_N
         // right side of expr is a literal => evaluate
         AST_Node *temp;
         // check whether the literal is int or bool
-        if (rhs_expr->str_value != NULL) {
-            temp = empty_node(ND_BOOL_EXPR);
-        } else {
+        if (rhs_expr->type == ND_INT) {
             temp = empty_node(ND_INT_EXPR);
+        } else {
+            temp = empty_node(ND_BOOL_EXPR);
         }
         add_child(temp, rhs_expr);
         rhs_symbol = execute_expression(table, global_table, temp, function);
@@ -332,8 +371,7 @@ Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
         execute_assign(table, global_table, stmt, function);
         return NULL;
     case ND_COND:
-
-        return NULL;
+        return execute_cond(table, global_table, stmt, function);
     case ND_LOOP:
 
         return NULL;
@@ -383,12 +421,12 @@ Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node 
         expr_symbol->name = dest_function->value.func_val.param_names[i];
         set_existing_symbol(new_table, expr_symbol);
     }
-    execute_function(new_table, global_table, dest_function);
+    AST_Node *stmts = dest_function->value.func_val.func_node;
+    execute_stmts(new_table, global_table, stmts, dest_function);
 }
 
-Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function) {
+Symbol *execute_stmts(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmts, Symbol *function) {
     // assume `table` is already populated with function params
-    AST_Node *stmts = function->value.func_val.func_node;
     for (int i = 0; i < stmts->children_size; i += 1) {
         AST_Node *stmt = stmts->children[i];
         Symbol *return_result = execute_stmt(table, global_table, stmt, function);
@@ -397,6 +435,7 @@ Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol
             return return_result;
         }
     }
+    return NULL;
 }
 
 void interpret_ast(AST_Node *root) {
@@ -404,7 +443,8 @@ void interpret_ast(AST_Node *root) {
 
     register_funcs(root, global_table);
     Symbol *begin = check_entry_point(global_table);
-    Symbol *rc = execute_function(create_symbol_table(), global_table, begin);
+    AST_Node *stmts = begin->value.func_val.func_node;
+    Symbol *rc = execute_stmts(create_symbol_table(), global_table, stmts, begin);
     if (rc != NULL) {
         // make the interpreter return whatever the begin function returns as the exit code
         exit(rc->value.int_val);

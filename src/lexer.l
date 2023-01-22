@@ -35,9 +35,10 @@
 ";" { return tk_semicol; }
 ":" { return tk_colon; }
 "," { return tk_comma; }
+"true" { yylval.str = strdup(yytext); return tk_lit_bool; }
+"false" { yylval.str = strdup(yytext); return tk_lit_bool; }
 [0-9]+ { yylval.num = atoi(yytext); return tk_lit_int; }
 \"[^\"]*\" { yylval.str = strdup(yytext); return tk_lit_str; }
-"true" | "false" { yylval.str = strdup(yytext); return tk_lit_bool; }
 [a-zA-Z][_a-zA-Z0-9]* { yylval.str = strdup(yytext); return tk_ident; }
 . { printf("could not match token: %s", yytext); }
 
