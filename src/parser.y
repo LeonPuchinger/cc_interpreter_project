@@ -225,14 +225,10 @@ EXPRS: EXPRS tk_comma EXPR {
 
 IDENT: tk_ident { $$ = str_node($1); }
 
-RETURN: tk_ret_kw IDENT {
-        $$ = empty_node_st(ND_RET, 0);
+RETURN: tk_ret_kw EXPR {
+        $$ = empty_node(ND_RET);
         add_child($$, $2);
-    }
-    | tk_ret_kw LIT {
-        $$ = empty_node_st(ND_RET, 1);
-        add_child($$, $2);
-    }
+}
 
 %%
 

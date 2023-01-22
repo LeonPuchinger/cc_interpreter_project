@@ -10,8 +10,8 @@ enum Symbol_Type subtype_to_symbol_type(int subtype);
 void register_funcs(AST_Node *root, Symbol_Table *table);
 Symbol *check_entry_point(Symbol_Table *table);
 void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign);
-void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
-void *execute_return(Symbol_Table *table, AST_Node *ret, Symbol *function);
+Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
+Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
 void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
 
@@ -106,40 +106,18 @@ void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *a
     // TODO
 }
 
-void *execute_return(Symbol_Table *table, AST_Node *ret, Symbol *function) {
-    switch (ret->subtype) {
-    case 0:
-        // assigning ident
-        char *ident_name = ret->children[0]->str_value;
-        Symbol *ident = find_symbol(table, ident_name);
-        if (ident == NULL) {
-            printf("ERROR: trying to return '%s', which does not exits.\n", ident_name);
-            printf("affected function: %s\n", function->name);
-            exit(1);
-        }
-        enum Symbol_Type ident_type = ident->type;
-        enum Symbol_Type ret_type = function->type;
-        if (ident_type != ret_type) {
-            printf("ERROR: return type does not match return type specified in function header.\n");
-            printf("affected function: %s\n", function->name);
-            exit(1);
-        }
-        switch (ident->type) {
-        case SYM_BOOL:
-            return &(ident->value.bool_val);
-        case SYM_INT:
-            return &(ident->value.int_val);
-        case SYM_STR:
-            return &(ident->value.bool_val);
-        }
-        printf("ERROR: functions are not first class citizens and can therefore not be returned.\n");
-        printf("trying to return function '%s'\n", ident_name);
+Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function) {
+    AST_Node *expr = ret->children[0];
+    Symbol *result = execute_expression(table, global_table, expr, function);
+    // check whether the return type matches what is actually returned
+    enum Symbol_Type ident_type = result->type;
+    enum Symbol_Type ret_type = function->type;
+    if (ident_type != ret_type) {
+        printf("ERROR: return type does not match return type specified in function header.\n");
+        printf("affected function: %s\n", function->name);
         exit(1);
-    case 1:
-        // assigning lit
-        // TODO: revamp returns to return expressions
-        return;
     }
+    return result;
 }
 
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
@@ -175,25 +153,24 @@ Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_
     }
 }
 
-void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function) {
+Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function) {
     switch (stmt->type) {
         // ND_ASSIGN, ND_COND, ND_LOOP, ND_RET, EXPR_...
     case ND_ASSIGN:
 
-        return;
+        return NULL;
     case ND_COND:
 
-        return;
+        return NULL;
     case ND_LOOP:
 
-        return;
+        return NULL;
     case ND_RET:
-        execute_return(table, stmt, function);
-        return;
+        return execute_return(table, global_table, stmt, function);
     default:
         // assume stmt is expr
         execute_expression(table, global_table, stmt, function);
-        return;
+        return NULL;
     }
 }
 
