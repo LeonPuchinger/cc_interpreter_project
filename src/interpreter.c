@@ -18,7 +18,7 @@ enum Symbol_Type subtype_to_symbol_type(int subtype) {
         return SYM_INT;
     case 2:
         // bool param
-        return SYM_INT;
+        return SYM_BOOL;
     }
 }
 
