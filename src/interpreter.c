@@ -63,10 +63,29 @@ void register_funcs(AST_Node *root, Symbol_Table *table) {
     }
 }
 
+Symbol *check_entry_point(Symbol_Table *table) {
+    Symbol *begin = find_symbol(table, "begin");
+    if (begin == NULL) {
+        printf("ERROR: entry point not found. please define 'begin' function.\n");
+        exit(1);
+    }
+    if (begin->value.func_val.num_params != 0) {
+        printf("ERROR: 'begin' function does not take parameters\n");
+        exit(1);
+    }
+    if (begin->value.func_val.return_type != SYM_INT) {
+        printf("ERROR: 'begin' function needs to have 'int' return type\n");
+        exit(1);
+    }
+    return begin;
+}
+
 void interpret_ast(AST_Node *root) {
     Symbol_Table *table = create_symbol_table();
 
     register_funcs(root, table);
+    Symbol *begin = check_entry_point(table);
+
 }
 
 
