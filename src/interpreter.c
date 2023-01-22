@@ -15,6 +15,7 @@ Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
 Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
+Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
@@ -198,6 +199,91 @@ Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
     return create_symbol_string("", concat_result);
 }
 
+Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
+    if (expr->children_size == 1) {
+        // expression is just a bool literal
+        char* value = expr->children[0]->str_value;
+        if (strcmp(value, "true") == 0) {
+            return create_symbol_bool("", 1);
+        }
+        return create_symbol_bool("", 0);
+    }
+    AST_Node *lhs_expr = expr->children[0];
+    Symbol *lhs_symbol = NULL;
+    AST_Node *rhs_expr = expr->children[2];
+    Symbol *rhs_symbol = NULL;
+    if (expr->subtype == 0 || expr->subtype == 2) {
+        // left side of expr is a literal => evaluate
+        AST_Node *temp;
+        // check whether the literal is int or bool
+        if (lhs_expr->str_value != NULL) {
+            temp = empty_node(ND_BOOL_EXPR);
+        } else {
+            temp = empty_node(ND_INT_EXPR);
+        }
+        add_child(temp, lhs_expr);
+        lhs_symbol = execute_expression(table, global_table, temp, function);
+    }
+    if (expr->subtype == 1 || expr->subtype == 3) {
+        // left side of expr is an ident => evaluate
+        lhs_symbol = execute_expression(table, global_table, lhs_expr, function);
+    }
+    if (expr->subtype == 0 || expr->subtype == 1) {
+        // right side of expr is a literal => evaluate
+        AST_Node *temp;
+        // check whether the literal is int or bool
+        if (rhs_expr->str_value != NULL) {
+            temp = empty_node(ND_BOOL_EXPR);
+        } else {
+            temp = empty_node(ND_INT_EXPR);
+        }
+        add_child(temp, rhs_expr);
+        rhs_symbol = execute_expression(table, global_table, temp, function);
+    }
+    if (expr->subtype == 2 || expr->subtype == 3) {
+        // right side of expr is an ident => evaluate
+        Symbol *rhs_symbol = execute_expression(table, global_table, rhs_expr, function);
+    }
+    // check if types can be compared
+    if (lhs_symbol->type != rhs_symbol->type) {
+        printf("ERROR: comparing two different types (int and bool).\n");
+        printf("affected function: %s\n", function->name);
+        exit(1);
+    }
+    // calculate result of the expression
+    char *operator = expr->children[1]->str_value;
+    // extract values based on data type of the comparison
+    int lhs_value;
+    int rhs_value;
+    if (lhs_symbol->type == SYM_BOOL) {
+        lhs_value = lhs_symbol->value.bool_val;
+        rhs_value = rhs_symbol->value.bool_val;
+    } else {
+        lhs_value = lhs_symbol->value.int_val;
+        rhs_value = rhs_symbol->value.int_val;
+    }
+    int comp_result = 0;
+    if (strcmp(operator, "==") == 0) {
+        comp_result = lhs_value == rhs_value;
+    }
+    if (strcmp(operator, "!=") == 0) {
+        comp_result = lhs_value != rhs_value;
+    }
+    if (strcmp(operator, "<") == 0) {
+        comp_result = lhs_value < rhs_value;
+    }
+    if (strcmp(operator, "<=") == 0) {
+        comp_result = lhs_value <= rhs_value;
+    }
+    if (strcmp(operator, ">") == 0) {
+        comp_result = lhs_value > rhs_value;
+    }
+    if (strcmp(operator, ">=") == 0) {
+        comp_result = lhs_value >= rhs_value;
+    }
+    return create_symbol_bool("", comp_result);
+}
+
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
     switch (expr->type) {
     case ND_STR:
@@ -232,6 +318,8 @@ Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_
         return execute_int_expr(table, global_table, expr, function);
     case ND_STR_EXPR:
         return execute_str_expr(table, global_table, expr, function);
+    case ND_BOOL_EXPR:
+        return execute_bool_expr(table, global_table, expr, function);
     }
 }
 
