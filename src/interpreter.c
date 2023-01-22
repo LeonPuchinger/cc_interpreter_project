@@ -6,6 +6,14 @@
 
 AST_Node *root;
 
+enum Symbol_Type subtype_to_symbol_type(int subtype);
+void register_funcs(AST_Node *root, Symbol_Table *table);
+Symbol *check_entry_point(Symbol_Table *table);
+void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign);
+void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt);
+void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
+Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
+
 enum Symbol_Type subtype_to_symbol_type(int subtype) {
     // Helper function to translate an AST subtype into a Symbol_Type.
     // The function uses the subtypes of "TYPE_ANNOT" AST node.
