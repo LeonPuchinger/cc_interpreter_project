@@ -11,7 +11,8 @@ void yyerror(const char *);
 
 %define parse.error detailed
 
-%type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP LIT INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
+%type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT
+%type <ast_node> LOOP RETURN EXPR BOOL_EXPR OP_COMP LIT INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
 %token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se tk_add tk_sub tk_concat
 %token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon tk_ret_tp_ind
@@ -77,6 +78,7 @@ STMTS: STMTS STMT {
 
 STMT: ASSIGN tk_semicol { $$ = $1; }
     | CONTROL_FLOW
+    | RETURN
     | EXPR tk_semicol { $$ = $1; }
 
 ASSIGN: IDENT tk_assign EXPR {
@@ -221,6 +223,15 @@ EXPRS: EXPRS tk_comma EXPR {
     | %empty { $$ = NULL; }
 
 IDENT: tk_ident { $$ = str_node($1); }
+
+RETURN: tk_ret_kw IDENT {
+        $$ = empty_node_st(ND_RET, 0);
+        add_child($$, $2);
+    }
+    | tk_ret_kw LIT {
+        $$ = empty_node_st(ND_RET, 1);
+        add_child($$, $2);
+    }
 
 %%
 
