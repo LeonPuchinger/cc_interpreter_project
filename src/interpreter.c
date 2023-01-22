@@ -80,12 +80,43 @@ Symbol *check_entry_point(Symbol_Table *table) {
     return begin;
 }
 
+void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt) {
+    switch (stmt->type) {
+        // ND_ASSIGN, ND_COND, ND_LOOP, ND_RET, EXPR_...
+    case ND_ASSIGN:
+
+        return;
+    case ND_COND:
+
+        return;
+    case ND_LOOP:
+
+        return;
+    case ND_RET:
+
+        return;
+    default:
+        // assume stmt is expr
+
+        return;
+    }
+}
+
+Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function) {
+    // TODO: populate table with params
+    AST_Node *stmts = function->value.func_val.func_node;
+    for (int i = 0; i < stmts->children_size; i += 1) {
+        AST_Node *stmt = stmts->children[i];
+        execute_stmt(table, global_table, stmt);
+    }
+}
+
 void interpret_ast(AST_Node *root) {
-    Symbol_Table *table = create_symbol_table();
+    Symbol_Table *global_table = create_symbol_table();
 
-    register_funcs(root, table);
-    Symbol *begin = check_entry_point(table);
-
+    register_funcs(root, global_table);
+    Symbol *begin = check_entry_point(global_table);
+    execute_function(create_symbol_table(), global_table, begin);
 }
 
 
