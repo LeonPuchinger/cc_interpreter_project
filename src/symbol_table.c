@@ -98,6 +98,13 @@ Symbol *create_symbol_bool(char *name, int value) {
     return create_symbol(name, SYM_BOOL, val, NULL, NULL, 0, 0, NULL);
 }
 
+void set_existing_symbol(Symbol_Table *table, Symbol *symbol) {
+    Scope *current_scope = table->current_scope;
+    current_scope->num_symbols++;
+    current_scope->symbols = (Symbol**)realloc(current_scope->symbols, sizeof(Symbol*) * current_scope->num_symbols);
+    current_scope->symbols[current_scope->num_symbols - 1] = symbol;
+}
+
 void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node) {
     Symbol *symbol = find_symbol_scope(table->current_scope, name);
     if (symbol == NULL) {
