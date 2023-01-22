@@ -5,13 +5,14 @@
 #include "types.h"
 #include "debug.h"
 
-AST_Node *root;
+AST_Node *root = NULL;
 
 enum Symbol_Type subtype_to_symbol_type(int subtype);
 void register_funcs(AST_Node *root, Symbol_Table *table);
 Symbol *check_entry_point(Symbol_Table *table);
 void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign, Symbol *function);
 Symbol *execute_cond(Symbol_Table *table, Symbol_Table *global_table, AST_Node *cond, Symbol *function);
+Symbol *execute_loop(Symbol_Table *table, Symbol_Table *global_table, AST_Node *cond, Symbol *function);
 Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
 Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
@@ -152,6 +153,22 @@ Symbol *execute_cond(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
             return result;
         }
     }
+}
+
+Symbol *execute_loop(Symbol_Table *table, Symbol_Table *global_table, AST_Node *cond, Symbol *function) {
+    while (1) {
+        // loop until condition is met
+        Symbol *bool_expr = execute_expression(table, global_table, cond->children[0], function);
+        if (bool_expr->value.bool_val == 0) {
+            break;
+        }
+        // pretend single loop iteration is just a condition
+        Symbol *result = execute_cond(table, global_table, cond, function);
+        if (result != NULL) {
+            return result;
+        }
+    }
+    return NULL;
 }
 
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function) {
@@ -373,8 +390,7 @@ Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
     case ND_COND:
         return execute_cond(table, global_table, stmt, function);
     case ND_LOOP:
-
-        return NULL;
+        return execute_loop(table, global_table, stmt, function);
     case ND_RET:
         return execute_return(table, global_table, stmt, function);
     default:

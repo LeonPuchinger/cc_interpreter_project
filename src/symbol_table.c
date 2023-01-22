@@ -100,12 +100,16 @@ Symbol *create_symbol_bool(char *name, int value) {
 
 void set_existing_symbol(Symbol_Table *table, Symbol *symbol) {
     Scope *current_scope = table->current_scope;
-    for (int i = 0; i < current_scope->num_symbols; i++) {
-        if (strcmp(current_scope->symbols[i]->name, symbol->name) == 0) {
-            current_scope->symbols[i] = symbol;
-            return;
+    while (current_scope != NULL) {
+        for (int i = 0; i < current_scope->num_symbols; i++) {
+            if (strcmp(current_scope->symbols[i]->name, symbol->name) == 0) {
+                current_scope->symbols[i] = symbol;
+                return;
+            }
         }
+        current_scope = current_scope->parent;
     }
+    current_scope = table->current_scope;
     current_scope->num_symbols++;
     current_scope->symbols = (Symbol**)realloc(current_scope->symbols, sizeof(Symbol*) * current_scope->num_symbols);
     current_scope->symbols[current_scope->num_symbols - 1] = symbol;
