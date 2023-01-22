@@ -28,6 +28,20 @@ void pop_scope(Symbol_Table *table) {
     free(old_scope);
 }
 
+Symbol *find_symbol_scope(Scope *scope, char *name) {
+    for (int i = 0; i < scope->num_symbols; i++) {
+        if (strcmp(scope->symbols[i]->name, name) == 0) {
+            return scope->symbols[i];
+        }
+    }
+    if (scope->parent != NULL) {
+        return find_symbol_scope(scope->parent, name);
+    }
+    else {
+        return NULL;
+    }
+}
+
 Symbol *find_symbol(Symbol_Table *table, char *name) {
     Scope *scope = table->current_scope;
     for (int i = 0; i < scope->num_symbols; i++) {
@@ -36,7 +50,7 @@ Symbol *find_symbol(Symbol_Table *table, char *name) {
         }
     }
     if (scope->parent != NULL) {
-        return find_symbol(scope->parent, name);
+        return find_symbol_scope(scope->parent, name);
     }
     else {
         return NULL;
@@ -44,7 +58,7 @@ Symbol *find_symbol(Symbol_Table *table, char *name) {
 }
 
 void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *value, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node) {
-    Symbol *symbol = find_symbol(table->current_scope, name);
+    Symbol *symbol = find_symbol_scope(table->current_scope, name);
     if (symbol == NULL) {
         symbol = (Symbol *)malloc(sizeof(Symbol));
         symbol->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
