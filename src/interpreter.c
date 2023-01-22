@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../gen/parser.tab.h"
 #include "types.h"
 #include "debug.h"
@@ -12,6 +13,7 @@ Symbol *check_entry_point(Symbol_Table *table);
 void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign, Symbol *function);
 Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
+Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
@@ -125,6 +127,43 @@ Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node
     return result;
 }
 
+Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
+    if (expr->children_size == 1) {
+        // expression is just an int literal
+        return create_symbol_int("", expr->children[0]->int_value);
+    }
+    AST_Node *lhs_expr = expr->children[0];
+    int lhs_value = 0;
+    AST_Node *rhs_expr = expr->children[2];
+    int rhs_value = 0;
+    if (lhs_expr->type == ND_INT) {
+        // left side of expr is a literal => just read value
+        lhs_value = lhs_expr->int_value;
+    }
+    if (lhs_expr->type == ND_STR) {
+        // left side of expr is an ident => evaluate
+        Symbol *result = execute_expression(table, global_table, lhs_expr, function);
+        lhs_value = result->value.int_val;
+    }
+    if (rhs_expr->type == ND_INT) {
+        // right side of expr is a literal => just read value
+        rhs_value = rhs_expr->int_value;
+    }
+    if (rhs_expr->type == ND_STR) {
+        // right side of expr is an ident => evaluate
+        Symbol *result = execute_expression(table, global_table, rhs_expr, function);
+        rhs_value = result->value.int_val;
+    }
+    // calculate result of the expression
+    char *operator = expr->children[1]->str_value;
+    int result = 0;
+    if (strcmp(operator, "+") == 0) {
+        result = lhs_value + rhs_value;
+    }
+    result = lhs_value - rhs_value;
+    return create_symbol_int("", result);
+}
+
 Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
     switch (expr->type) {
     case ND_STR:
@@ -155,6 +194,8 @@ Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_
         printf("ERROR: cannot use function in an expression that is not a function call.\n");
         printf("affected function: %s\n", function->name);
         exit(1);
+    case ND_INT_EXPR:
+        return execute_int_expr(table, global_table, expr, function);
     }
 }
 
