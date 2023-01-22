@@ -411,15 +411,30 @@ void interpret_ast(AST_Node *root) {
     }
 }
 
-
-int main() {
-    // debug parser
-#ifdef YYDEBUG
-//yydebug = 1;
-#endif
-// construct AST into `root`
+int main(int argc, char **argv) {
+    // uncomment to debug parser (add --debug flag to bison):
+    #ifdef YYDEBUG
+    // yydebug = 1;
+    #endif
+    // redirect source file into stdin, if any
+    if (argc > 2) {
+        printf("ERROR: either specify a single source file path or pipe the source into stdin.\n");
+        exit(1);
+    }
+    if (argc == 2) {
+        if (freopen(argv[1], "r", stdin) == NULL) {
+            printf("ERROR: Cannot open input file.\n");
+            exit(1);
+        }
+    }
+    // construct AST into `root`
     yyparse();
-    // debug AST
-    //debug_traverse_tree(root, 0);
+    fclose(stdin);
+    // uncomment to debug AST:
+    // debug_traverse_tree(root, 0);
+    // uncomment and place this line wherever to debug a symbol table instance:
+    // debug_print_symbol_table(table, 0);
+
+    // start interpretation
     interpret_ast(root);
 }
