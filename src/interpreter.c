@@ -9,9 +9,10 @@ AST_Node *root;
 enum Symbol_Type subtype_to_symbol_type(int subtype);
 void register_funcs(AST_Node *root, Symbol_Table *table);
 Symbol *check_entry_point(Symbol_Table *table);
-void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign);
+void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign, Symbol *function);
 Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt, Symbol *function);
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function);
+Symbol *execute_expression(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function);
 void prepare_function_call(Symbol_Table *table, Symbol_Table *global_table, Symbol *function, AST_Node *exprs);
 Symbol *execute_function(Symbol_Table *table, Symbol_Table *global_table, Symbol *function);
 
@@ -89,21 +90,25 @@ Symbol *check_entry_point(Symbol_Table *table) {
     return begin;
 }
 
-void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign) {
+void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign, Symbol *function) {
     char *variable_name = assign->children[0]->str_value;
     if (find_symbol(global_table, variable_name) != NULL) {
         printf("ERROR: cannot reassign functions (%s).\n", variable_name);
         exit(1);
     }
+    AST_Node *expr = assign->children[1];
     Symbol *existing = find_symbol(table, variable_name);
-    // TODO: evaluate expression
-    if (existing == NULL) {
-        // new symbol needs to be registered
-        
-        return;
+    Symbol *result = execute_expression(table, global_table, expr, function);
+    if (existing != NULL) {
+        // symbol already exits, check if types are compatible
+        if (existing->type != result->type) {
+            printf("ERROR: trying to assign an expression to a variable ('%s') of different type.\n", variable_name);
+            printf("affected function: %s\n", function->name);
+            exit(1);
+        }
     }
-    // symbol already exists, check type and assign
-    // TODO
+    result->name = variable_name;
+    set_existing_symbol(table, result);
 }
 
 Symbol *execute_return(Symbol_Table *table, Symbol_Table *global_table, AST_Node *ret, Symbol *function) {
@@ -157,7 +162,7 @@ Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
     switch (stmt->type) {
         // ND_ASSIGN, ND_COND, ND_LOOP, ND_RET, EXPR_...
     case ND_ASSIGN:
-
+        execute_assign(table, global_table, stmt, function);
         return NULL;
     case ND_COND:
 
