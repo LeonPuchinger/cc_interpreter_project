@@ -85,3 +85,7 @@ void set_symbol_bool(Symbol_Table *table, char *name, int value) {
 void set_symbol_string(Symbol_Table *table, char *name, char *value) {
     set_symbol(table, name, SYM_STR, value, NULL, NULL, 0, SYM_STR, NULL);
 }
+
+void set_symbol_func(Symbol_Table *table, char *name, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node) {
+    set_symbol(table, name, SYM_FUNC, NULL, param_names, param_types, num_params, return_type, func_node);
+}

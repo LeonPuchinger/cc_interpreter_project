@@ -68,6 +68,6 @@ void set_symbol(Symbol_Table *table, char *name, enum Symbol_Type type, void *va
 void set_symbol_int(Symbol_Table *table, char *name, int value);
 void set_symbol_bool(Symbol_Table *table, char *name, int value);
 void set_symbol_string(Symbol_Table *table, char *name, char *value);
-
+void set_symbol_func(Symbol_Table *table, char *name, char **param_names, enum Symbol_Type *param_types, int num_params, enum Symbol_Type return_type, struct AST_Node *func_node);
 
 #endif
