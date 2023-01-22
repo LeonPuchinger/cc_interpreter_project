@@ -80,6 +80,23 @@ Symbol *check_entry_point(Symbol_Table *table) {
     return begin;
 }
 
+void execute_assign(Symbol_Table *table, Symbol_Table *global_table, AST_Node *assign) {
+    char *variable_name = assign->children[0]->str_value;
+    if (find_symbol(global_table, variable_name) != NULL) {
+        printf("ERROR: cannot reassign functions (%s).\n", variable_name);
+        exit(1);
+    }
+    Symbol *existing = find_symbol(table, variable_name);
+    // TODO: evaluate expression
+    if (existing == NULL) {
+        // new symbol needs to be registered
+        
+        return;
+    }
+    // symbol already exists, check type and assign
+    // TODO
+}
+
 void execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmt) {
     switch (stmt->type) {
         // ND_ASSIGN, ND_COND, ND_LOOP, ND_RET, EXPR_...
