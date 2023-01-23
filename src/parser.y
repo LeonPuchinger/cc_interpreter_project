@@ -213,12 +213,12 @@ FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
 }
 
 EXPRS: EXPRS tk_comma EXPR {
-        if ($3 != NULL) {
-            $$ = $3;
+        if ($1 != NULL) {
+            $$ = $1;
         } else {
             $$ = empty_node(ND_EXPRS);
         }
-        prepend_child($$, $1);
+        add_child($$, $3);
     }
     | EXPR {
         $$ = empty_node(ND_EXPRS);
