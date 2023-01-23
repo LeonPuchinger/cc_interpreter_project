@@ -55,8 +55,11 @@ void debug_traverse_tree(AST_Node *node, int level) {
     case ND_EXPRS:
         printf("ND_EXPRS\n");
         break;
+    case ND_RET:
+        printf("ND_RET\n");
+        break;
     default:
-        printf("Unknown node type\n");
+        printf("Unknown node type: %d\n", node->type);
         break;
     }
     for (int i = 0; i < node->children_size; i += 1) {
