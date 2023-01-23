@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "../gen/parser.tab.h"
 #include "types.h"
 #include "debug.h"
@@ -131,7 +132,8 @@ Symbol *execute_cond(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
                 return result;
             }
         }
-    } else {
+    }
+    else {
         // extract statements from else branch
         AST_Node *alt_stmts;
         if (cond->children_size >= 2 && cond->children[1]->type == ND_COND_ALT) {
@@ -217,7 +219,8 @@ Symbol *execute_int_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
     int cal_result = 0;
     if (strcmp(operator, "+") == 0) {
         cal_result = lhs_value + rhs_value;
-    } else {
+    }
+    else {
         cal_result = lhs_value - rhs_value;
     }
     return create_symbol_int("", cal_result);
@@ -258,7 +261,7 @@ Symbol *execute_str_expr(Symbol_Table *table, Symbol_Table *global_table, AST_No
 Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_Node *expr, Symbol *function) {
     if (expr->children_size == 1) {
         // expression is just a bool literal
-        char* value = expr->children[0]->str_value;
+        char *value = expr->children[0]->str_value;
         if (strcmp(value, "true") == 0) {
             return create_symbol_bool("", 1);
         }
@@ -274,7 +277,8 @@ Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_N
         // check whether the literal is int or bool
         if (lhs_expr->type == ND_INT) {
             temp = empty_node(ND_INT_EXPR);
-        } else {
+        }
+        else {
             temp = empty_node(ND_BOOL_EXPR);
         }
         add_child(temp, lhs_expr);
@@ -290,7 +294,8 @@ Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_N
         // check whether the literal is int or bool
         if (rhs_expr->type == ND_INT) {
             temp = empty_node(ND_INT_EXPR);
-        } else {
+        }
+        else {
             temp = empty_node(ND_BOOL_EXPR);
         }
         add_child(temp, rhs_expr);
@@ -314,7 +319,8 @@ Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_N
     if (lhs_symbol->type == SYM_BOOL) {
         lhs_value = lhs_symbol->value.bool_val;
         rhs_value = rhs_symbol->value.bool_val;
-    } else {
+    }
+    else {
         lhs_value = lhs_symbol->value.int_val;
         rhs_value = rhs_symbol->value.int_val;
     }
@@ -400,9 +406,66 @@ Symbol *execute_stmt(Symbol_Table *table, Symbol_Table *global_table, AST_Node *
     }
 }
 
+int read_int(const char *prompt) {
+    // Provide prompt to user if there is one
+    if (prompt != NULL) {
+        printf("%s\n", prompt);
+    }
+    int input;
+    // Read input and check if it is a valid int
+    if (scanf("%d", &input) != 1) {
+        printf("Error: invalid input. Please enter an integer.\n");
+        // Clear the input buffer
+        while (getchar() != '\n');
+        return 0;
+    }
+    return input;
+}
+
+int rand_num(int low, int high) {
+    // Seed the random number generator
+    srand(time(NULL));
+    // Generate a random number between low and high
+    return low + rand() % (high - low + 1);
+}
+
+Symbol *std_print(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *function) {
+    int expr_size = 0;
+    AST_Node *exprs = NULL;
+    if (func_call->children_size == 2) {
+        // function called with parameters
+        exprs = func_call->children[1];
+        expr_size = exprs->children_size;
+    }
+    if (expr_size != 1) {
+        // print takes exactly one argument
+        printf("ERROR: print takes exactly one argument.\n");
+        exit(1);
+    }
+    AST_Node *expr = exprs->children[0];
+    Symbol *to_print = execute_expression(table, global_table, expr, function);
+    switch (to_print->type) {
+    case SYM_INT:
+        printf("%d", to_print->value.int_val);
+        return NULL;
+    case SYM_STR:
+        printf("%s", to_print->value.string_val);
+        return NULL;
+    case SYM_BOOL:
+        if (to_print->value.bool_val != 0) {
+            printf("true");
+        } else {
+            printf("false");
+        }
+        return NULL;
+    }
+}
+
 Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *source_function) {
     char *dest_func_name = func_call->children[0]->str_value;
-    // TODO: check if stdlib function
+    if (strcmp(dest_func_name, "print") == 0) {
+        return std_print(table, global_table, func_call, source_function);
+    }
     Symbol *dest_function = find_symbol(global_table, dest_func_name);
     if (dest_function == NULL) {
         printf("ERROR: called function does not exist: '%s'.\n", dest_func_name);
@@ -439,6 +502,7 @@ Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node 
     }
     AST_Node *stmts = dest_function->value.func_val.func_node;
     execute_stmts(new_table, global_table, stmts, dest_function);
+    // TODO: does this not need to return?
 }
 
 Symbol *execute_stmts(Symbol_Table *table, Symbol_Table *global_table, AST_Node *stmts, Symbol *function) {
@@ -469,10 +533,10 @@ void interpret_ast(AST_Node *root) {
 
 int main(int argc, char **argv) {
     // uncomment to debug parser (add --debug flag to bison):
-    #ifdef YYDEBUG
-    // yydebug = 1;
-    #endif
-    // redirect source file into stdin, if any
+#ifdef YYDEBUG
+// yydebug = 1;
+#endif
+// redirect source file into stdin, if any
     if (argc > 2) {
         printf("ERROR: either specify a single source file path or pipe the source into stdin.\n");
         exit(1);
