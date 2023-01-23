@@ -304,7 +304,7 @@ Symbol *execute_bool_expr(Symbol_Table *table, Symbol_Table *global_table, AST_N
     }
     if (expr->subtype == 2 || expr->subtype == 3) {
         // right side of expr is an ident => evaluate
-        Symbol *rhs_symbol = execute_expression(table, global_table, rhs_expr, function);
+        rhs_symbol = execute_expression(table, global_table, rhs_expr, function);
     }
     // check if types can be compared
     if (lhs_symbol->type != rhs_symbol->type) {
