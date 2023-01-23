@@ -429,6 +429,35 @@ int rand_num(int low, int high) {
     return low + rand() % (high - low + 1);
 }
 
+Symbol *std_rand(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *function) {
+    int expr_size = 0;
+    AST_Node *exprs = NULL;
+    if (func_call->children_size == 2) {
+        // function called with parameters
+        exprs = func_call->children[1];
+        expr_size = exprs->children_size;
+    }
+    if (expr_size != 2) {
+        // print takes exactly two arguments
+        printf("ERROR: rand takes exactly two arguments.\n");
+        exit(1);
+    }
+    AST_Node *lower = exprs->children[0];
+    AST_Node *upper = exprs->children[1];
+    Symbol *lower_sym = execute_expression(table, global_table, lower, function);
+    Symbol *upper_sym = execute_expression(table, global_table, upper, function);
+    if (lower_sym == NULL || upper_sym == NULL) {
+        printf("ERROR: could not evaluate argument passed to rand.\n");
+        exit(1);
+    }
+    if (lower_sym->type != SYM_INT || upper_sym->type != SYM_INT) {
+        printf("ERROR: rand takes two integers as arguments: lower: int, upper: int\n");
+        exit(1);
+    }
+    int rand_result = rand_num(lower_sym->value.int_val, upper_sym->value.int_val);
+    return create_symbol_int("", rand_result);
+}
+
 Symbol *std_print(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *function) {
     int expr_size = 0;
     AST_Node *exprs = NULL;
@@ -444,6 +473,10 @@ Symbol *std_print(Symbol_Table *table, Symbol_Table *global_table, AST_Node *fun
     }
     AST_Node *expr = exprs->children[0];
     Symbol *to_print = execute_expression(table, global_table, expr, function);
+    if (to_print == NULL) {
+        printf("ERROR: could not evaluate argument passed to print.\n");
+        exit(1);
+    }
     switch (to_print->type) {
     case SYM_INT:
         printf("%d", to_print->value.int_val);
@@ -454,7 +487,8 @@ Symbol *std_print(Symbol_Table *table, Symbol_Table *global_table, AST_Node *fun
     case SYM_BOOL:
         if (to_print->value.bool_val != 0) {
             printf("true");
-        } else {
+        }
+        else {
             printf("false");
         }
         return NULL;
@@ -465,6 +499,9 @@ Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node 
     char *dest_func_name = func_call->children[0]->str_value;
     if (strcmp(dest_func_name, "print") == 0) {
         return std_print(table, global_table, func_call, source_function);
+    }
+    if (strcmp(dest_func_name, "rand") == 0) {
+        return std_rand(table, global_table, func_call, source_function);
     }
     Symbol *dest_function = find_symbol(global_table, dest_func_name);
     if (dest_function == NULL) {
