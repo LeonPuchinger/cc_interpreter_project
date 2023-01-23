@@ -204,7 +204,7 @@ STR_EXPR: tk_lit_str tk_concat tk_lit_str {
         add_child($$, $1);
         add_child($$, $3);
     }
-    | tk_lit_str { $$ = empty_node_st(ND_INT_EXPR, 4); add_child($$, str_node($1)); }
+    | tk_lit_str { $$ = empty_node_st(ND_STR_EXPR, 4); add_child($$, str_node($1)); }
 
 FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
     $$ = empty_node(ND_FUNC_CALL);
