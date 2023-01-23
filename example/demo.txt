@@ -1,0 +1,54 @@
+// entry point of the program
+// the returned int is used as the exit code of the program
+fun begin() -> int {
+    a = 1; // integer
+    b = "hello"; // string
+    c = true; // boolean
+
+    d = b ++ " world"; // string concatenation
+    result = add_numbers(1, 2); // calling functions
+
+    // if-else statement
+    if (a == 1) {
+        println("a is equal to 1");
+    } else {
+        println("a is not equal to 1");
+    }
+
+    // demo standard lib functions
+    standard_lib();
+
+    // printing
+    print("print without newline ");
+    println("or with");
+
+    return 0;
+}
+
+// function definition with parameters and return value
+fun add_numbers(a: int, b: int) -> int {
+    // loops
+    counter = 10;
+    loop (counter > 0) {
+        counter = counter - 1;
+    }
+
+    // arithmetic operation
+    c = a + b;
+    return c;
+}
+
+// demo the rest of the stdlib functions
+fun standard_lib() -> int {
+    // reading int from stdin
+    input = read_int();
+    println("here is what you put in:");
+    println(input);
+
+    // generating random number between 0 and 500
+    random_number = rand(0, 500);
+    println("random number:");
+    println(random_number);
+    
+    return 0;
+}

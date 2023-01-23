@@ -1,0 +1,68 @@
+fun bean_game() -> int {
+    heap_a = 10;
+    heap_b = 10;
+    heap = 0;
+    player = 1;
+    loop (heap_a > 0) {
+        if(heap_b <= 0){
+            break;
+        }
+        if (player == 1) {
+            println("Player 1: Which heap do you want to choose? (1: Heap A, 2: Heap B)");
+            heap = read_int();
+            println("How many beans do you want to remove? (1-3)");
+            beans = read_int();
+            if (heap == 1) {
+                heap_a = heap_a - beans;
+            } else {
+                if (heap == 2) {
+                    heap_b = heap_b - beans;
+                }
+            }
+            player = 2;
+        } else {
+            println("Player 2 (computer): Which heap do you want to choose? (1: Heap A, 2: Heap B)");
+            if (heap_a > heap_b) {
+                heap = 2;
+            } else {
+                if (heap_b > heap_a) {
+                    heap = 1;
+                } else {
+                    heap = rand(1, 2);
+                }
+            }
+            beans = rand(1, 3);
+            if (heap == 1) {
+                heap_a = heap_a - beans;
+            } else {
+                heap_b = heap_b - beans;
+            }
+            player = 1;
+        }
+        print("Heap A: ");
+        print(heap_a);
+        println(" beans");
+        print("Heap B: ");
+        print(heap_b);
+        println(" beans");
+    }
+    if (heap_a == 0) {
+        if (player == 1) {
+            println("Player 2 wins!");
+        } else {
+            println("Player 1 wins!");
+        }
+    } else {
+        if (player == 1) {
+            println("Player 1 wins!");
+        } else {
+            println("Player 2 wins!");
+        }
+    }
+    return 0;
+}
+
+fun begin() -> int {
+    bean_game();
+    return 0;
+}

@@ -11,10 +11,11 @@ void yyerror(const char *);
 
 %define parse.error detailed
 
-%type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT LOOP EXPR BOOL_EXPR OP_COMP LIT INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
+%type <ast_node> STMTS STMT ASSIGN FUNC_DEFS FUNC_DEF PARAMS TYPE_ANNOT CONTROL_FLOW COND COND_ALT
+%type <ast_node> LOOP RETURN EXPR BOOL_EXPR OP_COMP LIT INT_EXPR OP_NUM STR_EXPR FUNC_CALL EXPRS IDENT
 
 %token tk_assign <str> tk_comp_e tk_comp_ne tk_comp_gt tk_comp_ge tk_comp_st tk_comp_se tk_add tk_sub tk_concat
-%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon
+%token tk_op_paren tk_cl_paren tk_op_brace tk_cl_brace tk_semicol tk_comma tk_colon tk_ret_tp_ind
 %token tk_func_kw tk_loop_kw tk_ret_kw tk_if_kw tk_else_kw tk_str_tp tk_int_tp tk_bool_tp
 %token <num> tk_lit_int
 %token <str> tk_lit_str tk_lit_bool tk_ident
@@ -41,11 +42,12 @@ FUNC_DEFS: FUNC_DEFS FUNC_DEF {
     }
     | %empty { $$ = NULL; }
 
-FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_op_brace STMTS tk_cl_brace {
+FUNC_DEF: tk_func_kw IDENT tk_op_paren PARAMS tk_cl_paren tk_ret_tp_ind TYPE_ANNOT tk_op_brace STMTS tk_cl_brace {
     $$ = empty_node(ND_FUNC_DEF);
     add_child($$, $2);
     add_child($$, $4);
     add_child($$, $7);
+    add_child($$, $9);
 }
 
 PARAMS: IDENT tk_colon TYPE_ANNOT tk_comma PARAMS {
@@ -76,6 +78,7 @@ STMTS: STMTS STMT {
 
 STMT: ASSIGN tk_semicol { $$ = $1; }
     | CONTROL_FLOW
+    | RETURN tk_semicol { $$ = $1; }
     | EXPR tk_semicol { $$ = $1; }
 
 ASSIGN: IDENT tk_assign EXPR {
@@ -97,7 +100,10 @@ COND: tk_if_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace C
     add_child($$, $8);
 }
 
-COND_ALT: tk_else_kw tk_op_brace STMTS tk_cl_brace { $$ = $3; }
+COND_ALT: tk_else_kw tk_op_brace STMTS tk_cl_brace {
+        $$ = empty_node(ND_COND_ALT);
+        add_child($$, $3);
+    }
     | %empty { $$ = NULL; }
 
 LOOP: tk_loop_kw tk_op_paren BOOL_EXPR tk_cl_paren tk_op_brace STMTS tk_cl_brace {
@@ -136,7 +142,7 @@ BOOL_EXPR: LIT OP_COMP LIT {
         add_child($$, $2);
         add_child($$, $3);
     }
-    | tk_lit_bool { $$ = empty_node(ND_BOOL_EXPR); add_child($$, str_node($1)); }
+    | tk_lit_bool { $$ = empty_node_st(ND_BOOL_EXPR, 4); add_child($$, str_node($1)); }
 
 OP_COMP: tk_comp_e { $$ = str_node("=="); }
     | tk_comp_ne { $$ = str_node("!="); }
@@ -173,7 +179,7 @@ INT_EXPR: tk_lit_int OP_NUM tk_lit_int {
         add_child($$, $2);
         add_child($$, $3);
     }
-    | tk_lit_int { $$ = empty_node(ND_INT_EXPR); add_child($$, int_node($1)); }
+    | tk_lit_int { $$ = empty_node_st(ND_INT_EXPR, 4); add_child($$, int_node($1)); }
 
 OP_NUM: tk_add { $$ = str_node("+"); }
     | tk_sub { $$ = str_node("-"); }
@@ -198,20 +204,21 @@ STR_EXPR: tk_lit_str tk_concat tk_lit_str {
         add_child($$, $1);
         add_child($$, $3);
     }
-    | tk_lit_str { $$ = empty_node(ND_INT_EXPR); add_child($$, str_node($1)); }
+    | tk_lit_str { $$ = empty_node_st(ND_STR_EXPR, 4); add_child($$, str_node($1)); }
 
 FUNC_CALL: IDENT tk_op_paren EXPRS tk_cl_paren {
     $$ = empty_node(ND_FUNC_CALL);
+    add_child($$, $1);
     add_child($$, $3);
 }
 
 EXPRS: EXPRS tk_comma EXPR {
-        if ($3 != NULL) {
-            $$ = $3;
+        if ($1 != NULL) {
+            $$ = $1;
         } else {
             $$ = empty_node(ND_EXPRS);
         }
-        prepend_child($$, $1);
+        add_child($$, $3);
     }
     | EXPR {
         $$ = empty_node(ND_EXPRS);
@@ -221,10 +228,16 @@ EXPRS: EXPRS tk_comma EXPR {
 
 IDENT: tk_ident { $$ = str_node($1); }
 
+RETURN: tk_ret_kw EXPR {
+        $$ = empty_node(ND_RET);
+        add_child($$, $2);
+}
+
 %%
 
 void yyerror(const char *message) {
     extern char *yytext;
     extern int yylineno;
     fprintf(stderr, "ERROR: %s\nline: %d\nat: '%s'\n", message, yylineno, yytext);
+    exit(1);
 }
