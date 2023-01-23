@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "../gen/parser.tab.h"
+#include "../gen/lex.yy.h"
 #include "types.h"
 #include "debug.h"
 
@@ -422,6 +423,18 @@ int read_int(const char *prompt) {
     return input;
 }
 
+Symbol *std_read_int(Symbol_Table *table, Symbol_Table *global_table, AST_Node *func_call, Symbol *function) {
+    int expr_size = 0;
+    AST_Node *exprs = NULL;
+    if (func_call->children_size != 1) {
+        // function called with parameters
+        printf("ERROR: read_int takes no argument.\n");
+        exit(1);
+    }
+    int result = read_int("Please enter integer and press return:");
+    return create_symbol_int("", result);
+}
+
 int rand_num(int low, int high) {
     // Seed the random number generator
     srand(time(NULL));
@@ -503,6 +516,9 @@ Symbol *call_function(Symbol_Table *table, Symbol_Table *global_table, AST_Node 
     if (strcmp(dest_func_name, "rand") == 0) {
         return std_rand(table, global_table, func_call, source_function);
     }
+    if (strcmp(dest_func_name, "read_int") == 0) {
+        return std_read_int(table, global_table, func_call, source_function);
+    }
     Symbol *dest_function = find_symbol(global_table, dest_func_name);
     if (dest_function == NULL) {
         printf("ERROR: called function does not exist: '%s'.\n", dest_func_name);
@@ -570,23 +586,30 @@ void interpret_ast(AST_Node *root) {
 
 int main(int argc, char **argv) {
     // uncomment to debug parser (add --debug flag to bison):
-#ifdef YYDEBUG
-// yydebug = 1;
-#endif
-// redirect source file into stdin, if any
-    if (argc > 2) {
-        printf("ERROR: either specify a single source file path or pipe the source into stdin.\n");
+    #ifdef YYDEBUG
+    // yydebug = 1;
+    #endif
+    // read file from path passed in on the CLI
+    if (argc != 2) {
+        printf("ERROR: format: <path/to/source/file>.\n");
         exit(1);
     }
-    if (argc == 2) {
-        if (freopen(argv[1], "r", stdin) == NULL) {
-            printf("ERROR: Cannot open input file.\n");
-            exit(1);
-        }
+    FILE *fp = fopen(argv[1], "r");
+    if (!fp) {
+        printf("ERROR: could not read source file.\n");
+        exit(1);
     }
+    // write file contents to a buffer
+    fseek(fp, 0, SEEK_END);
+    size_t size = ftell(fp);
+    rewind(fp);
+    char *buffer = (char *) malloc(size);
+    fread(buffer, 1, size, fp);
+    fclose(fp);
+    // tell bison about the buffer
+    yy_scan_string(buffer);
     // construct AST into `root`
     yyparse();
-    fclose(stdin);
     // uncomment to debug AST:
     // debug_traverse_tree(root, 0);
     // uncomment and place this line wherever to debug a symbol table instance:
