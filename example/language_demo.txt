@@ -1,0 +1,12 @@
+fun bean_game() -> int {
+    heap_a = 10;
+    loop (heap_a > 0) {
+       
+    }
+    return 0;
+}
+
+fun begin() -> int {
+    bean_game();
+    return 0;
+}

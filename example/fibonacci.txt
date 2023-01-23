@@ -18,7 +18,7 @@ fun fibonacci(n: int) -> int {
 }
 
 fun begin() -> int {
-    num = 10;
+    num = read_int();
     fibonacci(num);
     return 0;
 }

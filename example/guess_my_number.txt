@@ -1,0 +1,31 @@
+fun guess_my_number() -> int {
+    number = rand(0, 1000);
+    guess = 1001;
+    count = 0;
+    loop (guess != number) {
+        println("Guess the number between 0 and 1000:");
+        guess = read_int();
+        count = count + 1;
+        if (guess < number) {
+            println("The number is higher");
+        } else {
+            if (guess > number) {
+                println("The number is lower");
+            } else {
+                println("Congratulations! You guessed the number in this number of attempts:");
+                println(count);
+            }
+        }
+    }
+    println("Do you want to play again? (input 1 for yes, 0 for no)");
+    play_again = read_int();
+    if (play_again == 1){
+        guess_my_number();
+    }
+    return 0;
+}
+
+fun begin() -> int {
+    guess_my_number();
+    return 0;
+}
