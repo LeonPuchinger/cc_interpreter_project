@@ -1,3 +1,4 @@
+#!/bin/bash
 # tested with the following versions:
 # flex: 2.6.4
 # bison: 3.7.6
